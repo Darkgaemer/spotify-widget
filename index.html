@@ -8,376 +8,208 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;600;700&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;600;700&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@600;700&family=Orbitron:wght@500;700&family=Rajdhani:wght@500;600;700&family=Rubik:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { colors: { spotify: '#1DB954' } } }
-    }
+    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { spotify: '#1DB954' } } } }
   </script>
   <style>
     :root {
-      --accent: #a855f7;
-      --accent-end: #c084fc;
-      --card-bg: rgba(15, 18, 28, 0.82);
-      --title-color: #ffffff;
-      --album-color: #e2e8f0;
-      --time-color: #94a3b8;
-      --track-bg: rgba(255,255,255,0.18);
-      --knob-unfilled: #ffffff;
-      --cover-size: 92px;
-      --cover-radius: 18px;
-      --widget-radius: 20px;
-      --title-size: 28px;
-      --album-size: 15px;
-      --time-size: 12px;
-      --bar-height: 5px;
-      --knob-size: 14px;
-      --widget-font: 'Inter', system-ui, sans-serif;
-      --widget-width: 520px;
-      --gap: 18px;
-      --pad: 16px;
-      --widget-scale: 1;
+      --accent: #a855f7; --accent-end: #c084fc; --card-bg: rgba(15, 18, 28, 0.82);
+      --title-color: #ffffff; --album-color: #e2e8f0; --time-color: #94a3b8;
+      --track-bg: rgba(255,255,255,0.18); --knob-unfilled: #ffffff;
+      --border-color: rgba(255,255,255,0.12); --cover-size: 92px; --cover-radius: 18px;
+      --widget-radius: 20px; --title-size: 28px; --album-size: 15px; --time-size: 12px;
+      --bar-height: 5px; --knob-size: 14px; --widget-font: 'Inter', system-ui, sans-serif;
+      --widget-width: 520px; --gap: 18px; --pad: 16px; --widget-scale: 1;
+      --blur: 18px; --glow-strength: 0.45; --letter-spacing: -0.02em;
+      --marquee-speed: 12s; --eq-speed: 0.8s; --spin-speed: 12s;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: Inter, system-ui, sans-serif;
-      background: #0a0c10;
-      color: #e2e8f0;
-      min-height: 100vh;
-    }
-
-    body.obs-mode {
-      background: transparent !important;
-      margin: 0 !important;
-      overflow: hidden !important;
-    }
+    body { font-family: Inter, system-ui, sans-serif; background: #0a0c10; color: #e2e8f0; min-height: 100vh; }
+    body.obs-mode { background: transparent !important; margin: 0 !important; overflow: hidden !important; }
     body.obs-mode #studio { display: none !important; }
     body.obs-mode #obs-root { display: flex !important; }
 
-    /* ── Widget matches GPTprompt.png ── */
     .np-widget {
-      display: flex;
-      align-items: center;
-      gap: var(--gap);
-      width: var(--widget-width);
-      max-width: 100%;
-      padding: var(--pad);
-      border-radius: var(--widget-radius);
-      background: var(--card-bg);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      font-family: var(--widget-font);
-      position: relative;
-      overflow: hidden;
-      transition: box-shadow 0.35s ease;
-      transform: scale(var(--widget-scale));
-      transform-origin: center center;
+      display: flex; align-items: center; gap: var(--gap); width: var(--widget-width); max-width: 100%;
+      padding: var(--pad); border-radius: var(--widget-radius); background: var(--card-bg);
+      backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      font-family: var(--widget-font); position: relative; overflow: hidden;
+      transition: box-shadow 0.4s ease; transform: scale(var(--widget-scale)); transform-origin: center center;
     }
     .np-widget.has-glow {
-      box-shadow: 0 8px 32px -6px color-mix(in srgb, var(--accent) 45%, transparent);
+      box-shadow: 0 12px 40px -8px color-mix(in srgb, var(--accent) calc(var(--glow-strength) * 100%), transparent),
+        0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent);
     }
-    .np-widget.has-border {
-      border: 1px solid rgba(255,255,255,0.1);
+    .np-widget.has-border { border: 1px solid var(--border-color); }
+    .np-widget.gradient-border { border: none; }
+    .np-widget.gradient-border::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px;
+      background: linear-gradient(120deg, var(--accent), transparent 40%, var(--accent-end), transparent 70%, var(--accent));
+      background-size: 200% 200%; animation: borderFlow 4s linear infinite;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; z-index: 6;
     }
-    .np-widget.float-anim {
-      animation: floatY 4.5s ease-in-out infinite;
-    }
+    @keyframes borderFlow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+
+    .np-widget.float-anim { animation: floatY 4.5s ease-in-out infinite; }
+    .np-widget.breathe-anim { animation: breathe 3.5s ease-in-out infinite; }
+    .np-widget.sway-anim { animation: sway 5s ease-in-out infinite; }
     @keyframes floatY {
       0%, 100% { transform: scale(var(--widget-scale)) translateY(0); }
-      50% { transform: scale(var(--widget-scale)) translateY(-4px); }
+      50% { transform: scale(var(--widget-scale)) translateY(-5px); }
+    }
+    @keyframes breathe {
+      0%, 100% { transform: scale(var(--widget-scale)); }
+      50% { transform: scale(calc(var(--widget-scale) * 1.02)); }
+    }
+    @keyframes sway {
+      0%, 100% { transform: scale(var(--widget-scale)) rotate(0deg); }
+      50% { transform: scale(var(--widget-scale)) rotate(0.6deg); }
     }
 
+    .np-widget.track-in .np-meta { animation: slideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+    .np-widget.track-in .np-cover-wrap { animation: coverPop 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes coverPop { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+
+    .np-cover-wrap { position: relative; flex-shrink: 0; width: var(--cover-size); height: var(--cover-size); }
     .np-cover {
-      width: var(--cover-size);
-      height: var(--cover-size);
-      border-radius: var(--cover-radius);
-      object-fit: cover;
-      flex-shrink: 0;
-      background: #1e293b;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+      width: 100%; height: 100%; border-radius: var(--cover-radius); object-fit: cover;
+      background: #1e293b; box-shadow: 0 6px 20px rgba(0,0,0,0.45); display: block;
+    }
+    .np-cover.spin-playing { animation: coverSpin var(--spin-speed) linear infinite; border-radius: 50%; }
+    @keyframes coverSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .np-cover.pulse-playing { animation: coverPulse 1.4s ease-in-out infinite; }
+    @keyframes coverPulse {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.04); filter: brightness(1.08); }
     }
 
-    .np-meta {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 4px;
-    }
-
+    .np-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; position: relative; z-index: 1; }
     .np-title {
-      font-size: var(--title-size);
-      font-weight: 700;
-      color: var(--title-color);
-      line-height: 1.15;
-      letter-spacing: -0.02em;
-      white-space: nowrap;
-      overflow: hidden;
+      font-size: var(--title-size); font-weight: 700; color: var(--title-color); line-height: 1.15;
+      letter-spacing: var(--letter-spacing); white-space: nowrap; overflow: hidden;
     }
-    .np-title.stroke {
-      text-shadow:
-        -1px -1px 0 rgba(0,0,0,0.7),
-         1px -1px 0 rgba(0,0,0,0.7),
-        -1px  1px 0 rgba(0,0,0,0.7),
-         1px  1px 0 rgba(0,0,0,0.7),
-         0 2px 8px rgba(0,0,0,0.5);
+    .np-title.stroke, .np-album.stroke {
+      text-shadow: -1px -1px 0 rgba(0,0,0,0.7), 1px -1px 0 rgba(0,0,0,0.7), -1px 1px 0 rgba(0,0,0,0.7), 1px 1px 0 rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.5);
     }
+    .np-title.glow-text { text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 55%, transparent); }
 
     .marquee-wrap {
       overflow: hidden;
       mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
       -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
     }
-    .marquee-inner {
-      display: inline-flex;
-      width: max-content;
-      animation: marquee 12s linear infinite;
-    }
+    .marquee-inner { display: inline-flex; width: max-content; animation: marquee var(--marquee-speed) linear infinite; }
     .marquee-inner:hover { animation-play-state: paused; }
     .marquee-inner span { padding-right: 2.5rem; }
-    @keyframes marquee {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
+    @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
     .np-album {
-      font-size: var(--album-size);
-      font-weight: 500;
-      color: var(--album-color);
-      opacity: 0.85;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: var(--album-size); font-weight: 500; color: var(--album-color); opacity: 0.85;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .np-album.stroke {
-      text-shadow:
-        -1px -1px 0 rgba(0,0,0,0.6),
-         1px -1px 0 rgba(0,0,0,0.6),
-        -1px  1px 0 rgba(0,0,0,0.6),
-         1px  1px 0 rgba(0,0,0,0.6);
-    }
-
-    .np-progress-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 8px;
-    }
-
-    .np-bar-track {
-      flex: 1;
-      height: var(--bar-height);
-      border-radius: 99px;
-      background: var(--track-bg);
-      position: relative;
-    }
+    .np-progress-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+    .np-bar-track { flex: 1; height: var(--bar-height); border-radius: 99px; background: var(--track-bg); position: relative; overflow: visible; }
     .np-bar-fill {
-      height: 100%;
-      border-radius: 99px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-end));
-      width: 0%;
-      transition: width 0.12s linear;
+      height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent-end));
+      width: 0%; transition: width 0.12s linear; position: relative;
     }
+    .np-bar-fill.shimmer::after {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+      background-size: 200% 100%; animation: shimmer 2s linear infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .np-bar-fill.glow-bar { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 70%, transparent); }
 
-    /* Split knob like the mockup: left half accent, right half white */
     .np-knob {
-      position: absolute;
-      top: 50%;
-      width: var(--knob-size);
-      height: var(--knob-size);
-      border-radius: 50%;
+      position: absolute; top: 50%; width: var(--knob-size); height: var(--knob-size); border-radius: 50%;
       transform: translate(-50%, -50%);
       background: linear-gradient(135deg, var(--accent) 50%, var(--knob-unfilled) 50%);
-      box-shadow: 0 0 6px rgba(0,0,0,0.55);
-      pointer-events: none;
-      z-index: 2;
+      box-shadow: 0 0 6px rgba(0,0,0,0.55); pointer-events: none; z-index: 2;
     }
-    .np-knob.solid {
-      background: var(--accent);
-      box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
-    }
-    .np-knob.ring {
-      background: transparent;
-      border: 2.5px solid var(--accent);
-      box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+    .np-knob.solid { background: var(--accent); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent); }
+    .np-knob.ring { background: transparent; border: 2.5px solid var(--accent); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent); }
+    .np-knob.pulse-knob { background: var(--accent); animation: knobPulse 1.2s ease-in-out infinite; }
+    @keyframes knobPulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 6px var(--accent); }
+      50% { transform: translate(-50%, -50%) scale(1.25); box-shadow: 0 0 14px var(--accent); }
     }
     .np-knob.hidden-knob { display: none; }
 
     .np-time {
-      font-size: var(--time-size);
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
-      color: var(--time-color);
-      white-space: nowrap;
-      flex-shrink: 0;
-      letter-spacing: 0.02em;
+      font-size: var(--time-size); font-family: 'JetBrains Mono', ui-monospace, monospace;
+      color: var(--time-color); white-space: nowrap; flex-shrink: 0; letter-spacing: 0.02em;
     }
 
-    /* Mini equalizer bars */
-    .np-eq {
-      display: flex;
-      align-items: flex-end;
-      gap: 2px;
-      height: 14px;
-      margin-top: 6px;
-    }
-    .np-eq span {
-      width: 3px;
-      border-radius: 1px;
-      background: var(--accent);
-      opacity: 0.85;
-      transform-origin: bottom;
-    }
-    .np-eq.playing span {
-      animation: eqBounce 0.8s ease-in-out infinite alternate;
-    }
+    .np-eq { display: flex; align-items: flex-end; gap: 2px; height: 14px; margin-top: 6px; }
+    .np-eq span { width: 3px; border-radius: 1px; background: var(--accent); opacity: 0.9; transform-origin: bottom; }
+    .np-eq.playing span { animation: eqBounce var(--eq-speed) ease-in-out infinite alternate; }
     .np-eq.playing span:nth-child(1) { animation-delay: 0s; height: 40%; }
-    .np-eq.playing span:nth-child(2) { animation-delay: 0.1s; height: 70%; }
-    .np-eq.playing span:nth-child(3) { animation-delay: 0.2s; height: 100%; }
-    .np-eq.playing span:nth-child(4) { animation-delay: 0.15s; height: 55%; }
-    .np-eq.playing span:nth-child(5) { animation-delay: 0.05s; height: 80%; }
-    .np-eq.playing span:nth-child(6) { animation-delay: 0.25s; height: 45%; }
-    .np-eq.playing span:nth-child(7) { animation-delay: 0.12s; height: 90%; }
-    .np-eq.playing span:nth-child(8) { animation-delay: 0.18s; height: 60%; }
-    .np-eq:not(.playing) span { height: 20%; opacity: 0.35; animation: none; }
-    @keyframes eqBounce {
-      0% { transform: scaleY(0.35); }
-      100% { transform: scaleY(1); }
-    }
+    .np-eq.playing span:nth-child(2) { animation-delay: 0.08s; height: 70%; }
+    .np-eq.playing span:nth-child(3) { animation-delay: 0.16s; height: 100%; }
+    .np-eq.playing span:nth-child(4) { animation-delay: 0.12s; height: 55%; }
+    .np-eq.playing span:nth-child(5) { animation-delay: 0.04s; height: 80%; }
+    .np-eq.playing span:nth-child(6) { animation-delay: 0.2s; height: 45%; }
+    .np-eq.playing span:nth-child(7) { animation-delay: 0.1s; height: 90%; }
+    .np-eq.playing span:nth-child(8) { animation-delay: 0.14s; height: 60%; }
+    .np-eq.playing span:nth-child(9) { animation-delay: 0.06s; height: 75%; }
+    .np-eq.playing span:nth-child(10) { animation-delay: 0.18s; height: 50%; }
+    .np-eq:not(.playing) span { height: 18%; opacity: 0.3; animation: none; }
+    @keyframes eqBounce { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
+    .np-eq.style-wave span { border-radius: 99px; width: 4px; }
+    .np-eq.style-thin span { width: 2px; }
 
-    .np-logo {
-      position: absolute;
-      top: 10px;
-      right: 12px;
-      font-size: 14px;
-      opacity: 0.5;
-      color: var(--accent);
-      z-index: 5;
-    }
+    .np-logo { position: absolute; top: 10px; right: 12px; font-size: 14px; opacity: 0.45; color: var(--accent); z-index: 5; }
+    .np-logo.pulse-logo { animation: logoPulse 2s ease-in-out infinite; }
+    @keyframes logoPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.85; } }
 
     .np-ambient {
-      position: absolute;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      top: -40px;
-      left: -40px;
-      background: var(--accent);
-      opacity: 0.18;
-      filter: blur(40px);
-      pointer-events: none;
-      z-index: 0;
+      position: absolute; width: 140px; height: 140px; border-radius: 50%; top: -50px; left: -50px;
+      background: var(--accent); opacity: 0.2; filter: blur(48px); pointer-events: none; z-index: 0;
+    }
+    .np-ambient.breathe { animation: ambientBreathe 4s ease-in-out infinite; }
+    @keyframes ambientBreathe {
+      0%, 100% { opacity: 0.15; transform: scale(1); }
+      50% { opacity: 0.32; transform: scale(1.15); }
     }
 
-    .np-widget.layout-pill {
-      border-radius: 999px;
-      padding: 10px 18px 10px 10px;
-      gap: 14px;
-    }
-    .np-widget.layout-pill .np-cover {
-      border-radius: 50%;
-      width: 64px;
-      height: 64px;
-    }
+    .np-widget.layout-pill { border-radius: 999px; padding: 10px 18px 10px 10px; gap: 14px; }
+    .np-widget.layout-pill .np-cover, .np-widget.layout-pill .np-cover-wrap { border-radius: 50%; width: 64px; height: 64px; }
     .np-widget.layout-pill .np-title { font-size: calc(var(--title-size) * 0.78); }
-    .np-widget.layout-compact {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      width: 220px;
-      gap: 10px;
-    }
+    .np-widget.layout-compact { flex-direction: column; align-items: center; text-align: center; width: min(var(--widget-width), 240px); gap: 10px; }
     .np-widget.layout-compact .np-progress-row { width: 100%; }
     .np-widget.layout-compact .np-title { font-size: calc(var(--title-size) * 0.7); }
 
-    .glass {
-      background: rgba(14, 16, 22, 0.88);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.07);
-    }
+    .glass { background: rgba(14, 16, 22, 0.88); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.07); }
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 99px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      height: 5px;
-      border-radius: 99px;
-      background: #1e2433;
-      outline: none;
-      width: 100%;
-    }
+    input[type="range"] { -webkit-appearance: none; height: 5px; border-radius: 99px; background: #1e2433; outline: none; width: 100%; }
     input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: var(--accent);
-      cursor: pointer;
+      -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer;
       box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 50%, transparent);
     }
-    input[type="color"] {
-      -webkit-appearance: none;
-      border: none;
-      width: 34px; height: 26px;
-      border-radius: 7px;
-      cursor: pointer;
-      background: transparent;
-      padding: 0;
-    }
+    input[type="color"] { -webkit-appearance: none; border: none; width: 34px; height: 26px; border-radius: 7px; cursor: pointer; background: transparent; padding: 0; }
     input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-    input[type="color"]::-webkit-color-swatch {
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 7px;
-    }
-
-    .toggle {
-      width: 38px; height: 20px;
-      border-radius: 99px;
-      background: #2a3040;
-      cursor: pointer;
-      position: relative;
-      transition: background 0.2s;
-      flex-shrink: 0;
-    }
+    input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(255,255,255,0.15); border-radius: 7px; }
+    .toggle { width: 38px; height: 20px; border-radius: 99px; background: #2a3040; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
     .toggle.on { background: var(--accent); }
-    .toggle::after {
-      content: '';
-      position: absolute;
-      top: 2px; left: 2px;
-      width: 16px; height: 16px;
-      border-radius: 50%;
-      background: #fff;
-      transition: transform 0.2s;
-    }
+    .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform 0.2s; }
     .toggle.on::after { transform: translateX(18px); }
-
-    .tab-btn.active {
-      background: var(--accent);
-      color: #fff;
-      box-shadow: 0 3px 12px color-mix(in srgb, var(--accent) 35%, transparent);
-    }
-
-    #toast {
-      transform: translateY(120%);
-      transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
-    }
+    .tab-btn.active { background: var(--accent); color: #fff; box-shadow: 0 3px 12px color-mix(in srgb, var(--accent) 35%, transparent); }
+    #toast { transform: translateY(120%); transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); }
     #toast.show { transform: translateY(0); }
-
-    .opt-btn.active {
-      background: var(--accent);
-      color: #fff;
-    }
+    .opt-btn.active { background: var(--accent); color: #fff; }
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin-bottom: 8px; }
   </style>
 </head>
 <body>
-
   <div id="obs-root" class="hidden fixed inset-0 items-center justify-center p-3"></div>
-
   <div id="studio" class="min-h-screen flex flex-col">
-
     <header class="sticky top-0 z-50 border-b border-white/5 bg-[#0c0e14]/95 backdrop-blur-xl px-4 py-3">
       <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
@@ -386,7 +218,7 @@
           </div>
           <div>
             <h1 class="font-bold text-sm tracking-tight">Spotify Now-Playing <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 ml-1">OBS</span></h1>
-            <p class="text-[11px] text-slate-500">Clean stream overlay · matches your mockup</p>
+            <p class="text-[11px] text-slate-500">Fully customizable · spicy animations · live Spotify</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -401,181 +233,153 @@
     </header>
 
     <main class="flex-1 max-w-6xl mx-auto w-full p-4 grid grid-cols-1 lg:grid-cols-5 gap-4">
-
       <aside class="lg:col-span-2 space-y-4">
         <div class="glass rounded-2xl p-4">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-              <i class="fa-solid fa-eye text-purple-400"></i> Live Preview
-            </span>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-eye text-purple-400"></i> Live Preview</span>
             <div class="flex gap-1">
               <button data-bg="black" class="stage-bg w-5 h-5 rounded bg-black border border-white/20 ring-2 ring-purple-400"></button>
               <button data-bg="dark" class="stage-bg w-5 h-5 rounded bg-slate-800 border border-white/10"></button>
               <button data-bg="check" class="stage-bg w-5 h-5 rounded border border-white/10" style="background:repeating-conic-gradient(#222 0% 25%,#333 0% 50%) 50%/10px 10px"></button>
             </div>
           </div>
-          <div id="stage" class="rounded-xl min-h-[160px] flex items-center justify-center p-6 bg-black transition-colors">
+          <div id="stage" class="rounded-xl min-h-[180px] flex items-center justify-center p-6 bg-black transition-colors overflow-hidden">
             <div id="widget-host"></div>
           </div>
         </div>
-
         <div class="glass rounded-2xl p-4">
-          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
-            <i class="fa-solid fa-play text-purple-400"></i> Demo Controls
-          </div>
+          <div class="section-label flex items-center gap-1.5"><i class="fa-solid fa-play text-purple-400"></i> Demo Controls</div>
           <div class="flex items-center gap-2">
             <button id="sim-prev" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-sm"><i class="fa-solid fa-backward-step"></i></button>
-            <button id="sim-play" class="w-10 h-10 rounded-full bg-purple-500 text-white hover:brightness-110 flex items-center justify-center shadow-lg shadow-purple-500/30">
-              <i id="sim-icon" class="fa-solid fa-pause"></i>
-            </button>
+            <button id="sim-play" class="w-10 h-10 rounded-full bg-purple-500 text-white hover:brightness-110 flex items-center justify-center shadow-lg shadow-purple-500/30"><i id="sim-icon" class="fa-solid fa-pause"></i></button>
             <button id="sim-next" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-sm"><i class="fa-solid fa-forward-step"></i></button>
             <span id="sim-label" class="text-xs text-slate-400 truncate flex-1 ml-1">Blinding Lights</span>
           </div>
           <input id="sim-scrub" type="range" min="0" max="100" value="45" class="mt-3">
         </div>
-
         <div class="glass rounded-2xl p-4">
-          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
-            <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> Presets
-          </div>
+          <div class="section-label flex items-center gap-1.5"><i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> Presets</div>
           <div id="presets" class="grid grid-cols-2 gap-2"></div>
         </div>
       </aside>
 
-      <section class="lg:col-span-3 glass rounded-2xl p-4 flex flex-col min-h-[560px]">
+      <section class="lg:col-span-3 glass rounded-2xl p-4 flex flex-col min-h-[600px]">
         <div class="flex gap-1 overflow-x-auto pb-3 mb-4 border-b border-white/5" id="tabs">
           <button data-tab="style" class="tab-btn active px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition">Style</button>
-          <button data-tab="type" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition text-slate-400 hover:text-white">Typography</button>
-          <button data-tab="bar" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition text-slate-400 hover:text-white">Progress Bar</button>
+          <button data-tab="type" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition text-slate-400 hover:text-white">Type</button>
+          <button data-tab="bar" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition text-slate-400 hover:text-white">Bar & EQ</button>
+          <button data-tab="motion" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition text-slate-400 hover:text-white">Motion</button>
           <button data-tab="layout" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition text-slate-400 hover:text-white">Layout</button>
           <button data-tab="spotify" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition text-slate-400 hover:text-white">Spotify</button>
         </div>
-
         <div class="flex-1 overflow-y-auto space-y-5 pr-1">
 
           <div id="panel-style" class="tab-panel space-y-4">
             <div class="grid grid-cols-2 gap-3">
-              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Accent (fill)</span>
-                <input type="color" id="c-accent" value="#a855f7">
-              </label>
-              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Accent end</span>
-                <input type="color" id="c-accentEnd" value="#c084fc">
-              </label>
-              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Card BG</span>
-                <input type="color" id="c-cardBg" value="#0f121c">
-              </label>
-              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Title color</span>
-                <input type="color" id="c-title" value="#ffffff">
-              </label>
-              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Album color</span>
-                <input type="color" id="c-album" value="#e2e8f0">
-              </label>
-              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Time color</span>
-                <input type="color" id="c-time" value="#94a3b8">
-              </label>
+              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Accent</span><input type="color" id="c-accent" value="#a855f7"></label>
+              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Accent end</span><input type="color" id="c-accentEnd" value="#c084fc"></label>
+              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Card BG</span><input type="color" id="c-cardBg" value="#0f121c"></label>
+              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Border color</span><input type="color" id="c-borderColor" value="#ffffff"></label>
+              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Title</span><input type="color" id="c-title" value="#ffffff"></label>
+              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Album</span><input type="color" id="c-album" value="#e2e8f0"></label>
+              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Time</span><input type="color" id="c-time" value="#94a3b8"></label>
+              <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Knob unfilled</span><input type="color" id="c-knobUnfilled" value="#ffffff"></label>
             </div>
-            <div>
-              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Card opacity <span id="v-opacity" class="normal-case text-slate-400">82%</span></div>
-              <input type="range" id="c-opacity" min="0" max="100" value="82">
-            </div>
+            <div><div class="section-label">Card opacity <span id="v-opacity" class="normal-case text-slate-400 font-normal tracking-normal">82%</span></div><input type="range" id="c-opacity" min="0" max="100" value="82"></div>
+            <div><div class="section-label">Glass blur <span id="v-blur" class="normal-case text-slate-400 font-normal tracking-normal">18px</span></div><input type="range" id="c-blur" min="0" max="40" value="18"></div>
+            <div><div class="section-label">Glow strength <span id="v-glowStr" class="normal-case text-slate-400 font-normal tracking-normal">45%</span></div><input type="range" id="c-glowStr" min="0" max="100" value="45"></div>
             <div class="grid grid-cols-2 gap-3">
-              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Glow</span>
-                <div class="toggle on" data-k="glow"></div>
-              </div>
-              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Border</span>
-                <div class="toggle on" data-k="border"></div>
-              </div>
-              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Float anim</span>
-                <div class="toggle" data-k="float"></div>
-              </div>
-              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Text stroke</span>
-                <div class="toggle" data-k="stroke"></div>
-              </div>
-              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Equalizer</span>
-                <div class="toggle on" data-k="showEq"></div>
-              </div>
-              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Spotify logo</span>
-                <div class="toggle on" data-k="showLogo"></div>
-              </div>
-              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5">
-                <span class="text-xs text-slate-300">Ambient glow</span>
-                <div class="toggle on" data-k="ambient"></div>
-              </div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Glow</span><div class="toggle on" data-k="glow"></div></div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Border</span><div class="toggle on" data-k="border"></div></div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Gradient border</span><div class="toggle" data-k="gradientBorder"></div></div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Text stroke</span><div class="toggle" data-k="stroke"></div></div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Title glow</span><div class="toggle" data-k="titleGlow"></div></div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Spotify logo</span><div class="toggle on" data-k="showLogo"></div></div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Ambient glow</span><div class="toggle on" data-k="ambient"></div></div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Uppercase</span><div class="toggle" data-k="uppercase"></div></div>
             </div>
           </div>
 
           <div id="panel-type" class="tab-panel hidden space-y-4">
             <div>
-              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Font</div>
+              <div class="section-label">Font</div>
               <select id="c-font" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400">
-                <option value="Inter">Inter</option>
-                <option value="Outfit">Outfit</option>
-                <option value="Space Grotesk">Space Grotesk</option>
-                <option value="Syne">Syne</option>
-                <option value="JetBrains Mono">JetBrains Mono</option>
+                <option value="Inter">Inter</option><option value="Outfit">Outfit</option><option value="Space Grotesk">Space Grotesk</option>
+                <option value="Syne">Syne</option><option value="Poppins">Poppins</option><option value="Rubik">Rubik</option>
+                <option value="Rajdhani">Rajdhani</option><option value="Orbitron">Orbitron (cyber)</option><option value="JetBrains Mono">JetBrains Mono</option>
               </select>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Title size <span id="v-titleSz">28px</span></div>
-                <input type="range" id="c-titleSz" min="16" max="40" value="28">
-              </div>
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Album size <span id="v-albumSz">15px</span></div>
-                <input type="range" id="c-albumSz" min="11" max="22" value="15">
-              </div>
+              <div><div class="section-label">Title size <span id="v-titleSz">28px</span></div><input type="range" id="c-titleSz" min="14" max="42" value="28"></div>
+              <div><div class="section-label">Album size <span id="v-albumSz">15px</span></div><input type="range" id="c-albumSz" min="10" max="24" value="15"></div>
+              <div><div class="section-label">Time size <span id="v-timeSz">12px</span></div><input type="range" id="c-timeSz" min="9" max="18" value="12"></div>
+              <div><div class="section-label">Letter spacing <span id="v-ls">-0.02</span></div><input type="range" id="c-ls" min="-5" max="15" value="-2"></div>
             </div>
-            <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5">
-              <span class="text-xs text-slate-300">Marquee long titles</span>
-              <div class="toggle on" data-k="marquee"></div>
-            </div>
+            <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Marquee long titles</span><div class="toggle on" data-k="marquee"></div></div>
+            <div><div class="section-label">Marquee speed <span id="v-marquee">12s</span></div><input type="range" id="c-marquee" min="4" max="30" value="12"></div>
           </div>
 
           <div id="panel-bar" class="tab-panel hidden space-y-4">
             <div>
-              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Knob style</div>
-              <div class="flex gap-2" id="knob-opts">
-                <button data-v="split" class="opt-btn active flex-1 px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Split</button>
-                <button data-v="solid" class="opt-btn flex-1 px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Solid</button>
-                <button data-v="ring" class="opt-btn flex-1 px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Ring</button>
-                <button data-v="hidden" class="opt-btn flex-1 px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Hide</button>
+              <div class="section-label">Knob style</div>
+              <div class="flex flex-wrap gap-2" id="knob-opts">
+                <button data-v="split" class="opt-btn active px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Split</button>
+                <button data-v="solid" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Solid</button>
+                <button data-v="ring" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Ring</button>
+                <button data-v="pulse" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Pulse</button>
+                <button data-v="hidden" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Hide</button>
               </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Bar height <span id="v-barH">5px</span></div>
-                <input type="range" id="c-barH" min="3" max="12" value="5">
-              </div>
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Knob size <span id="v-knobSz">14px</span></div>
-                <input type="range" id="c-knobSz" min="8" max="22" value="14">
+              <div><div class="section-label">Bar height <span id="v-barH">5px</span></div><input type="range" id="c-barH" min="2" max="14" value="5"></div>
+              <div><div class="section-label">Knob size <span id="v-knobSz">14px</span></div><input type="range" id="c-knobSz" min="8" max="24" value="14"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Show time</span><div class="toggle on" data-k="showTime"></div></div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Bar shimmer</span><div class="toggle on" data-k="barShimmer"></div></div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Bar glow</span><div class="toggle on" data-k="barGlow"></div></div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Equalizer</span><div class="toggle on" data-k="showEq"></div></div>
+            </div>
+            <div>
+              <div class="section-label">EQ style</div>
+              <div class="flex gap-2" id="eq-opts">
+                <button data-v="bars" class="opt-btn active flex-1 px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Bars</button>
+                <button data-v="wave" class="opt-btn flex-1 px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Wave</button>
+                <button data-v="thin" class="opt-btn flex-1 px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Thin</button>
               </div>
             </div>
-            <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5">
-              <span class="text-xs text-slate-300">Show time</span>
-              <div class="toggle on" data-k="showTime"></div>
+            <div><div class="section-label">EQ speed <span id="v-eqSpeed">0.8s</span></div><input type="range" id="c-eqSpeed" min="3" max="16" value="8"></div>
+          </div>
+
+          <div id="panel-motion" class="tab-panel hidden space-y-4">
+            <div>
+              <div class="section-label">Widget motion</div>
+              <div class="flex flex-wrap gap-2" id="motion-opts">
+                <button data-v="none" class="opt-btn active px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">None</button>
+                <button data-v="float" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Float</button>
+                <button data-v="breathe" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Breathe</button>
+                <button data-v="sway" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Sway</button>
+              </div>
             </div>
-            <label class="flex items-center justify-between gap-2 bg-white/5 rounded-xl px-3 py-2.5">
-              <span class="text-xs text-slate-300">Knob unfilled color</span>
-              <input type="color" id="c-knobUnfilled" value="#ffffff">
-            </label>
+            <div>
+              <div class="section-label">Cover animation</div>
+              <div class="flex flex-wrap gap-2" id="cover-anim-opts">
+                <button data-v="none" class="opt-btn active px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">None</button>
+                <button data-v="spin" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Vinyl spin</button>
+                <button data-v="pulse" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Pulse</button>
+              </div>
+            </div>
+            <div><div class="section-label">Spin speed <span id="v-spin">12s</span></div><input type="range" id="c-spin" min="4" max="30" value="12"></div>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Track change anim</span><div class="toggle on" data-k="trackAnim"></div></div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Ambient breathe</span><div class="toggle on" data-k="ambientBreathe"></div></div>
+              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Logo pulse</span><div class="toggle" data-k="logoPulse"></div></div>
+            </div>
           </div>
 
           <div id="panel-layout" class="tab-panel hidden space-y-4">
             <div>
-              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Layout</div>
+              <div class="section-label">Layout</div>
               <div class="flex gap-2" id="layout-opts">
                 <button data-v="classic" class="opt-btn active flex-1 px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Classic</button>
                 <button data-v="pill" class="opt-btn flex-1 px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Pill</button>
@@ -583,74 +387,40 @@
               </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Cover size <span id="v-cover">92px</span></div>
-                <input type="range" id="c-cover" min="56" max="130" value="92">
-              </div>
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Cover radius <span id="v-coverR">18px</span></div>
-                <input type="range" id="c-coverR" min="0" max="50" value="18">
-              </div>
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Widget width <span id="v-width">520px</span></div>
-                <input type="range" id="c-width" min="280" max="900" value="520">
-              </div>
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Corner radius <span id="v-radius">20px</span></div>
-                <input type="range" id="c-radius" min="0" max="40" value="20">
-              </div>
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Padding <span id="v-pad">16px</span></div>
-                <input type="range" id="c-pad" min="6" max="36" value="16">
-              </div>
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Gap (cover↔text) <span id="v-gap">18px</span></div>
-                <input type="range" id="c-gap" min="8" max="36" value="18">
-              </div>
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Overall scale <span id="v-scale">100%</span></div>
-                <input type="range" id="c-scale" min="50" max="150" value="100">
-              </div>
-              <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Time size <span id="v-timeSz">12px</span></div>
-                <input type="range" id="c-timeSz" min="9" max="18" value="12">
-              </div>
+              <div><div class="section-label">Cover size <span id="v-cover">92px</span></div><input type="range" id="c-cover" min="48" max="140" value="92"></div>
+              <div><div class="section-label">Cover radius <span id="v-coverR">18px</span></div><input type="range" id="c-coverR" min="0" max="70" value="18"></div>
+              <div><div class="section-label">Widget width <span id="v-width">520px</span></div><input type="range" id="c-width" min="260" max="900" value="520"></div>
+              <div><div class="section-label">Corner radius <span id="v-radius">20px</span></div><input type="range" id="c-radius" min="0" max="40" value="20"></div>
+              <div><div class="section-label">Padding <span id="v-pad">16px</span></div><input type="range" id="c-pad" min="4" max="40" value="16"></div>
+              <div><div class="section-label">Gap <span id="v-gap">18px</span></div><input type="range" id="c-gap" min="6" max="40" value="18"></div>
+              <div><div class="section-label">Overall scale <span id="v-scale">100%</span></div><input type="range" id="c-scale" min="50" max="160" value="100"></div>
             </div>
             <div class="bg-white/5 rounded-xl p-3 space-y-2">
-              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">OBS Browser Source URL</div>
-              <p class="text-[10px] text-slate-400 leading-relaxed">After connecting Spotify, click <strong>Copy OBS URL</strong> again. The link embeds your session so OBS can poll live tracks (OBS has its own browser — it cannot see your studio login).</p>
+              <div class="section-label mb-1">OBS Browser Source URL</div>
+              <p class="text-[10px] text-slate-400 leading-relaxed">Connect Spotify first, then <strong>Copy OBS URL</strong>. The link embeds your session so OBS can poll live tracks.</p>
               <textarea id="obs-url-preview" readonly rows="3" class="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-mono text-slate-400 outline-none resize-none"></textarea>
             </div>
           </div>
 
           <div id="panel-spotify" class="tab-panel hidden space-y-4">
             <div class="bg-purple-500/10 border border-purple-500/25 rounded-xl p-3 text-xs leading-relaxed text-slate-300 space-y-2">
-              <p><strong class="text-purple-300">Important:</strong> Spotify does <em>not</em> allow <code class="text-purple-200">file://</code> redirects. Your app is registered to:</p>
+              <p><strong class="text-purple-300">Important:</strong> Spotify does not allow <code class="text-purple-200">file://</code> redirects.</p>
               <p class="font-mono text-[11px] text-purple-200 break-all">https://darkgaemer.github.io/spotify-widget/</p>
-              <p>1. Upload this HTML to that GitHub Pages URL (Redirect URI must match exactly).<br>
-              2. Open the <strong>hosted</strong> page → Client ID → Connect Spotify.<br>
-              3. <strong>After connecting</strong>, click <strong>Copy OBS URL</strong> again — the link now includes your Spotify session so OBS can show live tracks (OBS is a separate browser and cannot see your studio login).</p>
+              <p>1. Host this file at that URL.<br>2. Open hosted page → Client ID → Connect.<br>3. After connect, click <strong>Copy OBS URL</strong>.</p>
             </div>
+            <div><div class="section-label">Client ID</div><input type="text" id="sp-client" placeholder="Spotify Client ID" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400 font-mono"></div>
             <div>
-              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Client ID</div>
-              <input type="text" id="sp-client" placeholder="Spotify Client ID" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400 font-mono">
-            </div>
-            <div>
-              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Redirect URI <span class="normal-case text-slate-400 font-normal">(must match Spotify Dashboard exactly)</span></div>
+              <div class="section-label">Redirect URI</div>
               <div class="flex gap-2">
                 <input type="text" id="sp-redirect" class="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs font-mono text-slate-200 outline-none focus:border-purple-400" value="https://darkgaemer.github.io/spotify-widget/">
-                <button id="btn-copy-uri" class="px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs" title="Copy"><i class="fa-solid fa-copy"></i></button>
+                <button id="btn-copy-uri" class="px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs"><i class="fa-solid fa-copy"></i></button>
               </div>
             </div>
             <div class="flex gap-2">
-              <button id="btn-sp-login" class="flex-1 py-2.5 rounded-xl bg-purple-500 text-white font-bold text-sm hover:brightness-110 transition flex items-center justify-center gap-2">
-                <i class="fa-brands fa-spotify"></i> Connect Spotify
-              </button>
+              <button id="btn-sp-login" class="flex-1 py-2.5 rounded-xl bg-purple-500 text-white font-bold text-sm hover:brightness-110 transition flex items-center justify-center gap-2"><i class="fa-brands fa-spotify"></i> Connect Spotify</button>
               <button id="btn-sp-logout" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold">Logout</button>
             </div>
-            <div id="sp-status" class="text-xs text-slate-500 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-slate-600"></span> Not connected
-            </div>
+            <div id="sp-status" class="text-xs text-slate-500 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-slate-600"></span> Not connected</div>
           </div>
         </div>
       </section>
@@ -658,570 +428,237 @@
   </div>
 
   <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-full bg-slate-900 border border-white/10 shadow-2xl text-sm font-medium flex items-center gap-2 pointer-events-none">
-    <i class="fa-solid fa-circle-check text-purple-400"></i>
-    <span id="toast-msg">Done</span>
+    <i class="fa-solid fa-circle-check text-purple-400"></i><span id="toast-msg">Done</span>
   </div>
 
 <script>
-(function () {
-  'use strict';
-
-  const state = {
-    cfg: {
-      accent: '#a855f7',
-      accentEnd: '#c084fc',
-      cardBg: '#0f121c',
-      opacity: 82,
-      titleColor: '#ffffff',
-      albumColor: '#e2e8f0',
-      timeColor: '#94a3b8',
-      knobUnfilled: '#ffffff',
-      glow: true,
-      border: true,
-      float: false,
-      stroke: false,
-      font: 'Inter',
-      titleSz: 28,
-      albumSz: 15,
-      marquee: true,
-      knob: 'split',
-      barH: 5,
-      knobSz: 14,
-      showTime: true,
-      layout: 'classic',
-      cover: 92,
-      coverR: 18,
-      width: 520,
-      radius: 20,
-      pad: 16,
-      gap: 18,
-      scale: 100,
-      timeSz: 12,
-      showEq: true,
-      showLogo: true,
-      ambient: true
-    },
-    track: {
-      title: 'Blinding Lights',
-      album: 'After Hours',
-      art: 'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',
-      duration: 200040,
-      progress: 90000,
-      playing: true
-    },
-    playlist: [
-      { title: 'Blinding Lights', album: 'After Hours', art: 'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36', duration: 200040 },
-      { title: 'As It Was', album: "Harry's House", art: 'https://i.scdn.co/image/ab67616d0000b2732e8ed79e177ff6018146c5d6', duration: 167300 },
-      { title: 'Starboy', album: 'Starboy', art: 'https://i.scdn.co/image/ab67616d0000b2734718e2b124f79258be7bc952', duration: 230450 },
-      { title: 'Levitating', album: 'Future Nostalgia', art: 'https://i.scdn.co/image/ab67616d0000b273ef24c3fdbf856340d55cfeb2', duration: 203060 }
-    ],
-    idx: 0,
-    token: localStorage.getItem('np_access') || null,
-    refresh: localStorage.getItem('np_refresh') || null,
-    poll: null
-  };
-
-  const PRESETS = [
-    { name: 'Purple Split', accent: '#a855f7', accentEnd: '#c084fc', cardBg: '#0f121c', font: 'Inter' },
-    { name: 'Spotify Green', accent: '#1DB954', accentEnd: '#1ed760', cardBg: '#121212', font: 'Inter' },
-    { name: 'Cyber Pink', accent: '#ff007f', accentEnd: '#ff4da6', cardBg: '#120a14', font: 'Space Grotesk' },
-    { name: 'OLED Minimal', accent: '#64748b', accentEnd: '#94a3b8', cardBg: '#000000', font: 'Outfit' },
-    { name: 'Amber Lo-Fi', accent: '#f59e0b', accentEnd: '#fbbf24', cardBg: '#1a1208', font: 'Outfit' },
-    { name: 'Ice Blue', accent: '#38bdf8', accentEnd: '#7dd3fc', cardBg: '#0a1220', font: 'Syne' }
-  ];
-
-  function $(s, r) { return (r || document).querySelector(s); }
-  function $$(s, r) { return [...(r || document).querySelectorAll(s)]; }
-
-  function fmt(ms) {
-    const s = Math.floor(Math.max(0, ms) / 1000);
-    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
-  }
-
-  function toast(msg) {
-    $('#toast-msg').textContent = msg;
-    $('#toast').classList.add('show');
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => $('#toast').classList.remove('show'), 2000);
-  }
-
-  function applyVars() {
-    const c = state.cfg;
-    const r = document.documentElement;
-    r.style.setProperty('--accent', c.accent);
-    r.style.setProperty('--accent-end', c.accentEnd);
-    const alpha = Math.round(c.opacity * 2.55).toString(16).padStart(2, '0');
-    let bg = c.cardBg;
-    if (bg.length === 7) bg = bg + alpha;
-    r.style.setProperty('--card-bg', bg);
-    r.style.setProperty('--title-color', c.titleColor);
-    r.style.setProperty('--album-color', c.albumColor);
-    r.style.setProperty('--time-color', c.timeColor);
-    r.style.setProperty('--knob-unfilled', c.knobUnfilled);
-    r.style.setProperty('--cover-size', c.cover + 'px');
-    r.style.setProperty('--cover-radius', c.coverR + 'px');
-    r.style.setProperty('--widget-radius', c.radius + 'px');
-    r.style.setProperty('--title-size', c.titleSz + 'px');
-    r.style.setProperty('--album-size', c.albumSz + 'px');
-    r.style.setProperty('--bar-height', c.barH + 'px');
-    r.style.setProperty('--knob-size', c.knobSz + 'px');
-    r.style.setProperty('--widget-font', "'" + c.font + "', system-ui, sans-serif");
-    r.style.setProperty('--widget-width', c.width + 'px');
-    r.style.setProperty('--pad', (c.pad || 16) + 'px');
-    r.style.setProperty('--gap', (c.gap || 18) + 'px');
-    r.style.setProperty('--widget-scale', ((c.scale || 100) / 100).toFixed(3));
-    r.style.setProperty('--time-size', (c.timeSz || 12) + 'px');
-  }
-
-  function esc(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function buildWidget() {
-    const c = state.cfg;
-    const t = state.track;
-    const pct = Math.min(100, Math.max(0, (t.progress / t.duration) * 100));
-    const needMarquee = c.marquee && t.title.length > 18;
-
-    const titleHtml = needMarquee
-      ? '<div class="marquee-wrap"><div class="marquee-inner"><span>' + esc(t.title) + '</span><span>' + esc(t.title) + '</span></div></div>'
-      : '<div class="truncate">' + esc(t.title) + '</div>';
-
-    const knobCls = c.knob === 'solid' ? 'solid' : c.knob === 'ring' ? 'ring' : c.knob === 'hidden' ? 'hidden-knob' : '';
-    const layoutCls = c.layout === 'pill' ? 'layout-pill' : c.layout === 'compact' ? 'layout-compact' : '';
-    const glowCls = c.glow ? 'has-glow' : '';
-    const borderCls = c.border ? 'has-border' : '';
-    const floatCls = c.float && t.playing ? 'float-anim' : '';
-    const strokeCls = c.stroke ? 'stroke' : '';
-
-    var eqHtml = c.showEq
-      ? '<div class="np-eq ' + (t.playing ? 'playing' : '') + '"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>'
-      : '';
-    var logoHtml = c.showLogo ? '<i class="fa-brands fa-spotify np-logo"></i>' : '';
-    var ambientHtml = c.ambient ? '<div class="np-ambient"></div>' : '';
-
-    return '<div class="np-widget ' + layoutCls + ' ' + glowCls + ' ' + borderCls + ' ' + floatCls + '">' +
-      ambientHtml +
-      logoHtml +
-      '<img class="np-cover" src="' + t.art + '" alt="" crossorigin="anonymous" onerror="this.src=\'https://placehold.co/200x200/1e293b/a855f7?text=%E2%99%AA\'">' +
-      '<div class="np-meta" style="position:relative;z-index:1">' +
-        '<div class="np-title ' + strokeCls + '">' + titleHtml + '</div>' +
-        '<div class="np-album ' + strokeCls + '">' + esc(t.album) + '</div>' +
-        '<div class="np-progress-row">' +
-          '<div class="np-bar-track">' +
-            '<div class="np-bar-fill" style="width:' + pct + '%"></div>' +
-            '<div class="np-knob ' + knobCls + '" style="left:' + pct + '%"></div>' +
-          '</div>' +
-          (c.showTime ? '<div class="np-time">' + fmt(t.progress) + '/' + fmt(t.duration) + '</div>' : '') +
-        '</div>' +
-        eqHtml +
-      '</div>' +
-    '</div>';
-  }
-
-  function render() {
-    applyVars();
-    const html = buildWidget();
-    const host = $('#widget-host');
-    if (host) host.innerHTML = html;
-    const obs = $('#obs-root');
-    if (obs && document.body.classList.contains('obs-mode')) {
-      obs.innerHTML = html;
-    }
-    updateObsUrlPreview();
-  }
-
-  function tickProgress() {
-    if (!state.track.playing) return;
-    // Always advance smoothly; Spotify poll corrects position every 1s
-    state.track.progress = Math.min(state.track.duration, state.track.progress + 100);
-    if (!state.token && state.track.progress >= state.track.duration) {
-      state.track.progress = 0;
-    }
-    const pct = (state.track.progress / state.track.duration) * 100;
-    $$('.np-bar-fill').forEach(function(el) { el.style.width = pct + '%'; });
-    $$('.np-knob').forEach(function(el) { el.style.left = pct + '%'; });
-    $$('.np-time').forEach(function(el) { el.textContent = fmt(state.track.progress) + '/' + fmt(state.track.duration); });
-    const scrub = $('#sim-scrub');
-    if (scrub && document.activeElement !== scrub) scrub.value = pct;
-  }
-
-  function randStr(n) {
-    const a = new Uint8Array(n);
-    crypto.getRandomValues(a);
-    return Array.from(a, function(b) { return ('0' + b.toString(16)).slice(-2); }).join('').slice(0, n);
-  }
-  async function sha256(p) {
-    const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p));
-    return btoa(String.fromCharCode.apply(null, new Uint8Array(d))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-  }
-
-  function getRedirectUri() {
-    // Prefer the user-configured value (must match Spotify Dashboard exactly)
-    var input = $('#sp-redirect');
-    var fromInput = input && input.value.trim();
-    if (fromInput) return fromInput.replace(/\/?$/, '/'); // normalize trailing slash
-    // Fallback: if page is hosted on https, use current origin path
-    if (location.protocol === 'https:' || location.protocol === 'http:') {
-      return location.origin + location.pathname.replace(/\/[^/]*$/, '/') || (location.origin + '/');
-    }
-    // file:// cannot be used with Spotify — hard default to user's registered URI
-    return 'https://darkgaemer.github.io/spotify-widget/';
-  }
-
-  async function spLogin() {
-    const id = $('#sp-client').value.trim();
-    if (!id) { toast('Enter Client ID'); return; }
-    localStorage.setItem('np_client', id);
-    var redir = getRedirectUri();
-    localStorage.setItem('np_redirect', redir);
-    // Warn if trying from file://
-    if (location.protocol === 'file:') {
-      toast('Open the hosted page to finish login (see Spotify tab)');
-      // Still start auth — Spotify will redirect to the registered HTTPS URI
-    }
-    const v = randStr(64);
-    localStorage.setItem('np_verifier', v);
-    const ch = await sha256(v);
-    const q = new URLSearchParams({
-      client_id: id, response_type: 'code', redirect_uri: redir,
-      scope: 'user-read-currently-playing user-read-playback-state',
-      code_challenge_method: 'S256', code_challenge: ch
-    });
-    location.href = 'https://accounts.spotify.com/authorize?' + q;
-  }
-
-  async function spCallback() {
-    const code = new URLSearchParams(location.search).get('code');
-    if (!code) return;
-    const id = localStorage.getItem('np_client');
-    const v = localStorage.getItem('np_verifier');
-    // Must use the SAME redirect_uri that was sent in the authorize request
-    const redir = localStorage.getItem('np_redirect') || getRedirectUri();
-    try {
-      const res = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          client_id: id, grant_type: 'authorization_code', code,
-          redirect_uri: redir, code_verifier: v
-        })
-      });
-      const data = await res.json();
-      if (data.access_token) {
-        localStorage.setItem('np_access', data.access_token);
-        if (data.refresh_token) localStorage.setItem('np_refresh', data.refresh_token);
-        state.token = data.access_token;
-        state.refresh = data.refresh_token || state.refresh;
-        // Clean URL without wiping path on GitHub Pages
-        var clean = location.pathname + (location.hash || '');
-        history.replaceState({}, '', clean);
-        setSpStatus(true);
-        startPoll();
-        toast('Connected to Spotify');
-      } else {
-        console.error('Token response', data);
-        toast(data.error_description || data.error || 'Auth failed');
-      }
-    } catch (e) { console.error(e); toast('Auth failed'); }
-  }
-
-  async function spRefresh() {
-    const id = localStorage.getItem('np_client');
-    const ref = localStorage.getItem('np_refresh');
-    if (!id || !ref) return;
-    try {
-      const res = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ client_id: id, grant_type: 'refresh_token', refresh_token: ref })
-      });
-      const data = await res.json();
-      if (data.access_token) {
-        localStorage.setItem('np_access', data.access_token);
-        state.token = data.access_token;
-      }
-    } catch (e) { console.error(e); }
-  }
-
-  async function spPoll() {
-    if (!state.token) return;
-    try {
-      const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-        headers: { Authorization: 'Bearer ' + state.token }
-      });
-      if (res.status === 401) { await spRefresh(); return; }
-      if (res.status === 204 || res.status === 202) return;
-      const d = await res.json();
-      if (!d || !d.item) return;
-      state.track.title = d.item.name;
-      state.track.album = (d.item.album && d.item.album.name) || (d.item.artists ? d.item.artists.map(function(a){return a.name;}).join(', ') : '');
-      state.track.art = (d.item.album && d.item.album.images && d.item.album.images[0]) ? d.item.album.images[0].url : state.track.art;
-      state.track.duration = d.item.duration_ms;
-      state.track.progress = d.progress_ms || 0;
-      state.track.playing = d.is_playing;
-      render();
-      $('#sim-label').textContent = state.track.title;
-      $('#sim-icon').className = 'fa-solid ' + (state.track.playing ? 'fa-pause' : 'fa-play');
-    } catch (e) { console.warn(e); }
-  }
-
-  function startPoll() {
-    clearInterval(state.poll);
-    spPoll();
-    // 1 second poll for responsive track changes; progress advances smoothly between polls
-    state.poll = setInterval(spPoll, 1000);
-  }
-
-  function setSpStatus(ok) {
-    $('#sp-status').innerHTML = ok
-      ? '<span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span> Connected — polling every 1s'
-      : '<span class="w-2 h-2 rounded-full bg-slate-600"></span> Not connected';
-    updateObsUrlPreview();
-  }
-
-  function getObsUrl() {
-    // Always use the hosted base (redirect URI origin) so OBS loads https, not file://
-    var redir = getRedirectUri();
-    var base = redir.replace(/\/?$/, '/');
-    // If currently on https host matching redirect, use exact current page path without query
-    if ((location.protocol === 'https:' || location.protocol === 'http:') && location.href.indexOf(location.origin) === 0) {
-      base = location.origin + location.pathname.split('?')[0];
-      if (!/\.html?$/i.test(base) && !/\/$/.test(base)) base += '/';
-    }
-    var params = new URLSearchParams();
-    params.set('obs', '1');
-    params.set('cfg', JSON.stringify(state.cfg));
-    // Embed Spotify session so OBS (separate browser profile) can poll live
-    var clientId = localStorage.getItem('np_client') || ($('#sp-client') && $('#sp-client').value) || '';
-    var access = state.token || localStorage.getItem('np_access') || '';
-    var refresh = state.refresh || localStorage.getItem('np_refresh') || '';
-    if (clientId) params.set('cid', clientId);
-    if (access) params.set('at', access);
-    if (refresh) params.set('rt', refresh);
-    return base + (base.indexOf('?') >= 0 ? '&' : '?') + params.toString();
-  }
-
-  function updateObsUrlPreview() {
-    var el = $('#obs-url-preview');
-    if (el) el.value = getObsUrl();
-  }
-
-  function loadObs() {
-    const p = new URLSearchParams(location.search);
-    if (p.get('obs') !== '1') return false;
-    document.body.classList.add('obs-mode');
-    const raw = p.get('cfg');
-    if (raw) {
-      try { Object.assign(state.cfg, JSON.parse(raw)); } catch (e) {
-        try { Object.assign(state.cfg, JSON.parse(decodeURIComponent(raw))); } catch (e2) {}
-      }
-    }
-    // Restore Spotify session from OBS URL (OBS has no access to studio localStorage)
-    var cid = p.get('cid');
-    var at = p.get('at');
-    var rt = p.get('rt');
-    if (cid) localStorage.setItem('np_client', cid);
-    if (at) {
-      localStorage.setItem('np_access', at);
-      state.token = at;
-    }
-    if (rt) {
-      localStorage.setItem('np_refresh', rt);
-      state.refresh = rt;
-    }
-
-    $('#obs-root').classList.remove('hidden');
-    $('#obs-root').classList.add('flex');
-    render();
-
-    // Smooth local progress every 100ms when playing
-    setInterval(function() {
-      if (state.track.playing) {
-        state.track.progress = Math.min(state.track.duration, state.track.progress + 100);
-        var pct = (state.track.progress / state.track.duration) * 100;
-        $$('.np-bar-fill').forEach(function(el) { el.style.width = pct + '%'; });
-        $$('.np-knob').forEach(function(el) { el.style.left = pct + '%'; });
-        $$('.np-time').forEach(function(el) { el.textContent = fmt(state.track.progress) + '/' + fmt(state.track.duration); });
-      }
-    }, 100);
-
-    if (state.token) {
-      startPoll();
-    }
-    return true;
-  }
-
-  function init() {
-    // Redirect URI: keep user's registered HTTPS URL (never force file://)
-    var savedRedir = localStorage.getItem('np_redirect');
-    var redirInput = $('#sp-redirect');
-    if (redirInput) {
-      if (savedRedir) redirInput.value = savedRedir;
-      else if (location.protocol === 'https:' || location.protocol === 'http:') {
-        // On hosted page, suggest current origin as redirect if not set
-        var pathDir = location.origin + location.pathname.replace(/\/[^/]*$/, '/');
-        if (!redirInput.value) redirInput.value = pathDir;
-      }
-      // else leave the HTML default: https://darkgaemer.github.io/spotify-widget/
-      redirInput.addEventListener('change', function() {
-        localStorage.setItem('np_redirect', redirInput.value.trim());
-      });
-    }
-    const saved = localStorage.getItem('np_client');
-    if (saved) $('#sp-client').value = saved;
-
-    if (loadObs()) return;
-
-    $$('.tab-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        $$('.tab-btn').forEach(function(b) { b.classList.remove('active'); b.classList.add('text-slate-400'); });
-        btn.classList.add('active'); btn.classList.remove('text-slate-400');
-        $$('.tab-panel').forEach(function(p) { p.classList.add('hidden'); });
-        var panel = $('#panel-' + btn.dataset.tab);
-        if (panel) panel.classList.remove('hidden');
-      });
-    });
-
-    $$('.toggle').forEach(function(t) {
-      var k = t.dataset.k;
-      t.classList.toggle('on', !!state.cfg[k]);
-      t.addEventListener('click', function() {
-        state.cfg[k] = !state.cfg[k];
-        t.classList.toggle('on', state.cfg[k]);
-        render();
-      });
-    });
-
-    function wireOpts(sel, key) {
-      $$(sel + ' .opt-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          state.cfg[key] = btn.dataset.v;
-          $$(sel + ' .opt-btn').forEach(function(b) { b.classList.toggle('active', b === btn); });
-          render();
-        });
-      });
-    }
-    wireOpts('#knob-opts', 'knob');
-    wireOpts('#layout-opts', 'layout');
-
-    function bind(id, key, label, suffix) {
-      var el = $(id);
-      if (!el) return;
-      el.addEventListener('input', function() {
-        state.cfg[key] = el.type === 'range' ? +el.value : el.value;
-        if (label) $(label).textContent = state.cfg[key] + (suffix || '');
-        render();
-      });
-    }
-    bind('#c-accent', 'accent');
-    bind('#c-accentEnd', 'accentEnd');
-    bind('#c-cardBg', 'cardBg');
-    bind('#c-title', 'titleColor');
-    bind('#c-album', 'albumColor');
-    bind('#c-time', 'timeColor');
-    bind('#c-knobUnfilled', 'knobUnfilled');
-    bind('#c-opacity', 'opacity', '#v-opacity', '%');
-    bind('#c-font', 'font');
-    bind('#c-titleSz', 'titleSz', '#v-titleSz', 'px');
-    bind('#c-albumSz', 'albumSz', '#v-albumSz', 'px');
-    bind('#c-barH', 'barH', '#v-barH', 'px');
-    bind('#c-knobSz', 'knobSz', '#v-knobSz', 'px');
-    bind('#c-cover', 'cover', '#v-cover', 'px');
-    bind('#c-coverR', 'coverR', '#v-coverR', 'px');
-    bind('#c-width', 'width', '#v-width', 'px');
-    bind('#c-radius', 'radius', '#v-radius', 'px');
-    bind('#c-pad', 'pad', '#v-pad', 'px');
-    bind('#c-gap', 'gap', '#v-gap', 'px');
-    bind('#c-scale', 'scale', '#v-scale', '%');
-    bind('#c-timeSz', 'timeSz', '#v-timeSz', 'px');
-
-    var pg = $('#presets');
-    pg.innerHTML = PRESETS.map(function(p, i) {
-      return '<button class="rounded-xl p-2.5 text-left border border-white/10 bg-white/5 hover:bg-white/10 transition text-xs" data-i="' + i + '" style="border-left:3px solid ' + p.accent + '"><div class="font-bold truncate">' + p.name + '</div></button>';
-    }).join('');
-    pg.querySelectorAll('button').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var p = PRESETS[+btn.dataset.i];
-        state.cfg.accent = p.accent;
-        state.cfg.accentEnd = p.accentEnd;
-        state.cfg.cardBg = p.cardBg;
-        state.cfg.font = p.font;
-        $('#c-accent').value = p.accent;
-        $('#c-accentEnd').value = p.accentEnd;
-        $('#c-cardBg').value = p.cardBg;
-        $('#c-font').value = p.font;
-        render();
-        toast(p.name);
-      });
-    });
-
-    $$('.stage-bg').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        $$('.stage-bg').forEach(function(b) { b.classList.remove('ring-2', 'ring-purple-400'); });
-        btn.classList.add('ring-2', 'ring-purple-400');
-        var s = $('#stage');
-        if (btn.dataset.bg === 'black') s.style.background = '#000';
-        else if (btn.dataset.bg === 'dark') s.style.background = '#1e293b';
-        else s.style.background = 'repeating-conic-gradient(#222 0% 25%, #333 0% 50%) 50%/12px 12px';
-      });
-    });
-
-    $('#sim-play').addEventListener('click', function() {
-      state.track.playing = !state.track.playing;
-      $('#sim-icon').className = 'fa-solid ' + (state.track.playing ? 'fa-pause' : 'fa-play');
-      render();
-    });
-    function applyTrack() {
-      var t = state.playlist[state.idx];
-      state.track.title = t.title;
-      state.track.album = t.album;
-      state.track.art = t.art;
-      state.track.duration = t.duration;
-      state.track.progress = 0;
-      $('#sim-label').textContent = t.title;
-      render();
-    }
-    $('#sim-prev').addEventListener('click', function() {
-      state.idx = (state.idx - 1 + state.playlist.length) % state.playlist.length;
-      applyTrack();
-    });
-    $('#sim-next').addEventListener('click', function() {
-      state.idx = (state.idx + 1) % state.playlist.length;
-      applyTrack();
-    });
-    $('#sim-scrub').addEventListener('input', function(e) {
-      state.track.progress = (+e.target.value / 100) * state.track.duration;
-      render();
-    });
-
-    $('#btn-copy').addEventListener('click', function() {
-      navigator.clipboard.writeText(getObsUrl()).then(function() { toast('OBS URL copied'); });
-    });
-    $('#btn-preview').addEventListener('click', function() { window.open(getObsUrl(), '_blank'); });
-
-    $('#btn-sp-login').addEventListener('click', spLogin);
-    $('#btn-sp-logout').addEventListener('click', function() {
-      localStorage.removeItem('np_access');
-      localStorage.removeItem('np_refresh');
-      state.token = null;
-      clearInterval(state.poll);
-      setSpStatus(false);
-      toast('Disconnected');
-    });
-    $('#btn-copy-uri').addEventListener('click', function() {
-      navigator.clipboard.writeText($('#sp-redirect').value).then(function() { toast('URI copied'); });
-    });
-
-    spCallback();
-    if (state.token) { setSpStatus(true); startPoll(); }
-
-    render();
-    setInterval(tickProgress, 100);
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+(function(){
+'use strict';
+const state={
+cfg:{accent:'#a855f7',accentEnd:'#c084fc',cardBg:'#0f121c',borderColor:'#ffffff',opacity:82,blur:18,glowStr:45,titleColor:'#ffffff',albumColor:'#e2e8f0',timeColor:'#94a3b8',knobUnfilled:'#ffffff',glow:true,border:true,gradientBorder:false,stroke:false,titleGlow:false,uppercase:false,font:'Inter',titleSz:28,albumSz:15,timeSz:12,ls:-2,marquee:true,marqueeSpeed:12,knob:'split',barH:5,knobSz:14,showTime:true,barShimmer:true,barGlow:true,showEq:true,eqStyle:'bars',eqSpeed:8,motion:'none',coverAnim:'none',spinSpeed:12,trackAnim:true,ambientBreathe:true,logoPulse:false,layout:'classic',cover:92,coverR:18,width:520,radius:20,pad:16,gap:18,scale:100,showLogo:true,ambient:true},
+track:{title:'Blinding Lights',album:'After Hours',art:'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',duration:200040,progress:90000,playing:true},
+playlist:[
+{title:'Blinding Lights',album:'After Hours',art:'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',duration:200040},
+{title:'As It Was',album:"Harry's House",art:'https://i.scdn.co/image/ab67616d0000b2732e8ed79e177ff6018146c5d6',duration:167300},
+{title:'Starboy',album:'Starboy',art:'https://i.scdn.co/image/ab67616d0000b2734718e2b124f79258be7bc952',duration:230450},
+{title:'Levitating',album:'Future Nostalgia',art:'https://i.scdn.co/image/ab67616d0000b273ef24c3fdbf856340d55cfeb2',duration:203060}
+],
+idx:0,token:localStorage.getItem('np_access')||null,refresh:localStorage.getItem('np_refresh')||null,poll:null,lastTitle:''
+};
+const PRESETS=[
+{name:'Purple Split',accent:'#a855f7',accentEnd:'#c084fc',cardBg:'#0f121c',font:'Inter',motion:'float'},
+{name:'Spotify Green',accent:'#1DB954',accentEnd:'#1ed760',cardBg:'#121212',font:'Inter',motion:'none'},
+{name:'Cyber Pink',accent:'#ff007f',accentEnd:'#ff4da6',cardBg:'#120a14',font:'Orbitron',motion:'breathe',gradientBorder:true},
+{name:'OLED Minimal',accent:'#64748b',accentEnd:'#94a3b8',cardBg:'#000000',font:'Outfit',motion:'none'},
+{name:'Amber Lo-Fi',accent:'#f59e0b',accentEnd:'#fbbf24',cardBg:'#1a1208',font:'Outfit',motion:'sway',coverAnim:'spin'},
+{name:'Ice Blue',accent:'#38bdf8',accentEnd:'#7dd3fc',cardBg:'#0a1220',font:'Syne',motion:'float'},
+{name:'Neon Tokyo',accent:'#f43f5e',accentEnd:'#fb7185',cardBg:'#0f0a10',font:'Rajdhani',motion:'breathe',gradientBorder:true},
+{name:'Vaporwave',accent:'#e879f9',accentEnd:'#22d3ee',cardBg:'#1a1025',font:'Space Grotesk',motion:'float',coverAnim:'pulse'}
+];
+function $(s,r){return(r||document).querySelector(s)}
+function $$(s,r){return[...(r||document).querySelectorAll(s)]}
+function fmt(ms){const s=Math.floor(Math.max(0,ms)/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function toast(msg){$('#toast-msg').textContent=msg;$('#toast').classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(function(){$('#toast').classList.remove('show')},2000)}
+function applyVars(){
+const c=state.cfg,r=document.documentElement;
+r.style.setProperty('--accent',c.accent);r.style.setProperty('--accent-end',c.accentEnd);
+const alpha=Math.round(c.opacity*2.55).toString(16).padStart(2,'0');
+var bg=c.cardBg;if(bg.length===7)bg=bg+alpha;
+r.style.setProperty('--card-bg',bg);r.style.setProperty('--title-color',c.titleColor);
+r.style.setProperty('--album-color',c.albumColor);r.style.setProperty('--time-color',c.timeColor);
+r.style.setProperty('--knob-unfilled',c.knobUnfilled);r.style.setProperty('--border-color',(c.borderColor||'#ffffff')+'22');
+r.style.setProperty('--cover-size',c.cover+'px');r.style.setProperty('--cover-radius',c.coverR+'px');
+r.style.setProperty('--widget-radius',c.radius+'px');r.style.setProperty('--title-size',c.titleSz+'px');
+r.style.setProperty('--album-size',c.albumSz+'px');r.style.setProperty('--bar-height',c.barH+'px');
+r.style.setProperty('--knob-size',c.knobSz+'px');r.style.setProperty('--widget-font',"'"+c.font+"', system-ui, sans-serif");
+r.style.setProperty('--widget-width',c.width+'px');r.style.setProperty('--pad',(c.pad||16)+'px');
+r.style.setProperty('--gap',(c.gap||18)+'px');r.style.setProperty('--widget-scale',((c.scale||100)/100).toFixed(3));
+r.style.setProperty('--time-size',(c.timeSz||12)+'px');r.style.setProperty('--blur',(c.blur||18)+'px');
+r.style.setProperty('--glow-strength',((c.glowStr||45)/100).toFixed(2));
+r.style.setProperty('--letter-spacing',((c.ls||-2)/100)+'em');
+r.style.setProperty('--marquee-speed',(c.marqueeSpeed||12)+'s');
+r.style.setProperty('--eq-speed',((c.eqSpeed||8)/10)+'s');
+r.style.setProperty('--spin-speed',(c.spinSpeed||12)+'s');
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function buildWidget(animateIn){
+const c=state.cfg,t=state.track;
+const pct=Math.min(100,Math.max(0,(t.progress/t.duration)*100));
+const needMarquee=c.marquee&&t.title.length>18;
+const titleHtml=needMarquee?'<div class="marquee-wrap"><div class="marquee-inner"><span>'+esc(t.title)+'</span><span>'+esc(t.title)+'</span></div></div>':'<div class="truncate">'+esc(t.title)+'</div>';
+var knobCls='hidden-knob';
+if(c.knob==='split')knobCls='';else if(c.knob==='solid')knobCls='solid';else if(c.knob==='ring')knobCls='ring';else if(c.knob==='pulse')knobCls='pulse-knob';
+const layoutCls=c.layout==='pill'?'layout-pill':c.layout==='compact'?'layout-compact':'';
+const glowCls=c.glow?'has-glow':'';const borderCls=c.border&&!c.gradientBorder?'has-border':'';
+const gradCls=c.gradientBorder?'gradient-border':'';
+var motionCls='';if(c.motion==='float')motionCls='float-anim';else if(c.motion==='breathe')motionCls='breathe-anim';else if(c.motion==='sway')motionCls='sway-anim';
+const strokeCls=c.stroke?'stroke':'';const glowTextCls=c.titleGlow?'glow-text':'';
+const upperStyle=c.uppercase?'text-transform:uppercase;':'';
+const trackIn=(animateIn&&c.trackAnim)?'track-in':'';
+var coverAnimCls='';if(t.playing&&c.coverAnim==='spin')coverAnimCls='spin-playing';else if(t.playing&&c.coverAnim==='pulse')coverAnimCls='pulse-playing';
+var eqStyleCls=c.eqStyle==='wave'?'style-wave':c.eqStyle==='thin'?'style-thin':'';
+var eqHtml=c.showEq?'<div class="np-eq '+(t.playing?'playing':'')+' '+eqStyleCls+'"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>':'';
+var logoHtml=c.showLogo?'<i class="fa-brands fa-spotify np-logo '+(c.logoPulse?'pulse-logo':'')+'"></i>':'';
+var ambientHtml=c.ambient?'<div class="np-ambient '+(c.ambientBreathe?'breathe':'')+'"></div>':'';
+var barExtra='';if(c.barShimmer)barExtra+=' shimmer';if(c.barGlow)barExtra+=' glow-bar';
+return '<div class="np-widget '+layoutCls+' '+glowCls+' '+borderCls+' '+gradCls+' '+motionCls+' '+trackIn+'">'+
+ambientHtml+logoHtml+
+'<div class="np-cover-wrap"><img class="np-cover '+coverAnimCls+'" src="'+t.art+'" alt="" crossorigin="anonymous" onerror="this.src=\'https://placehold.co/200x200/1e293b/a855f7?text=%E2%99%AA\'"></div>'+
+'<div class="np-meta"><div class="np-title '+strokeCls+' '+glowTextCls+'" style="'+upperStyle+'">'+titleHtml+'</div>'+
+'<div class="np-album '+strokeCls+'" style="'+upperStyle+'">'+esc(t.album)+'</div>'+
+'<div class="np-progress-row"><div class="np-bar-track"><div class="np-bar-fill'+barExtra+'" style="width:'+pct+'%"></div>'+
+'<div class="np-knob '+knobCls+'" style="left:'+pct+'%"></div></div>'+
+(c.showTime?'<div class="np-time">'+fmt(t.progress)+'/'+fmt(t.duration)+'</div>':'')+
+'</div>'+eqHtml+'</div></div>';
+}
+function render(animateIn){
+applyVars();const html=buildWidget(!!animateIn);
+const host=$('#widget-host');if(host)host.innerHTML=html;
+const obs=$('#obs-root');if(obs&&document.body.classList.contains('obs-mode'))obs.innerHTML=html;
+updateObsUrlPreview();
+}
+function tickProgress(){
+if(!state.track.playing)return;
+state.track.progress=Math.min(state.track.duration,state.track.progress+100);
+if(!state.token&&state.track.progress>=state.track.duration)state.track.progress=0;
+const pct=(state.track.progress/state.track.duration)*100;
+$$('.np-bar-fill').forEach(function(el){el.style.width=pct+'%'});
+$$('.np-knob').forEach(function(el){el.style.left=pct+'%'});
+$$('.np-time').forEach(function(el){el.textContent=fmt(state.track.progress)+'/'+fmt(state.track.duration)});
+const scrub=$('#sim-scrub');if(scrub&&document.activeElement!==scrub)scrub.value=pct;
+}
+function randStr(n){const a=new Uint8Array(n);crypto.getRandomValues(a);return Array.from(a,function(b){return('0'+b.toString(16)).slice(-2)}).join('').slice(0,n)}
+async function sha256(p){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p));return btoa(String.fromCharCode.apply(null,new Uint8Array(d))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_')}
+function getRedirectUri(){
+var input=$('#sp-redirect');var fromInput=input&&input.value.trim();
+if(fromInput)return fromInput.replace(/\/?$/,'/');
+if(location.protocol==='https:'||location.protocol==='http:')return location.origin+location.pathname.replace(/\/[^/]*$/,'/')||(location.origin+'/');
+return 'https://darkgaemer.github.io/spotify-widget/';
+}
+async function spLogin(){
+const id=$('#sp-client').value.trim();if(!id){toast('Enter Client ID');return}
+localStorage.setItem('np_client',id);var redir=getRedirectUri();localStorage.setItem('np_redirect',redir);
+if(location.protocol==='file:')toast('Open the hosted page to finish login');
+const v=randStr(64);localStorage.setItem('np_verifier',v);const ch=await sha256(v);
+const q=new URLSearchParams({client_id:id,response_type:'code',redirect_uri:redir,scope:'user-read-currently-playing user-read-playback-state',code_challenge_method:'S256',code_challenge:ch});
+location.href='https://accounts.spotify.com/authorize?'+q;
+}
+async function spCallback(){
+const code=new URLSearchParams(location.search).get('code');if(!code)return;
+const id=localStorage.getItem('np_client');const v=localStorage.getItem('np_verifier');
+const redir=localStorage.getItem('np_redirect')||getRedirectUri();
+try{
+const res=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:id,grant_type:'authorization_code',code:code,redirect_uri:redir,code_verifier:v})});
+const data=await res.json();
+if(data.access_token){
+localStorage.setItem('np_access',data.access_token);if(data.refresh_token)localStorage.setItem('np_refresh',data.refresh_token);
+state.token=data.access_token;state.refresh=data.refresh_token||state.refresh;
+history.replaceState({},'',location.pathname+(location.hash||''));setSpStatus(true);startPoll();toast('Connected to Spotify');
+}else toast(data.error_description||data.error||'Auth failed');
+}catch(e){console.error(e);toast('Auth failed')}
+}
+async function spRefresh(){
+const id=localStorage.getItem('np_client');const ref=localStorage.getItem('np_refresh')||state.refresh;if(!id||!ref)return;
+try{
+const res=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:id,grant_type:'refresh_token',refresh_token:ref})});
+const data=await res.json();
+if(data.access_token){localStorage.setItem('np_access',data.access_token);state.token=data.access_token;updateObsUrlPreview()}
+}catch(e){console.error(e)}
+}
+async function spPoll(){
+if(!state.token)return;
+try{
+const res=await fetch('https://api.spotify.com/v1/me/player/currently-playing',{headers:{Authorization:'Bearer '+state.token}});
+if(res.status===401){await spRefresh();return}if(res.status===204||res.status===202)return;
+const d=await res.json();if(!d||!d.item)return;
+var newTitle=d.item.name;var changed=newTitle!==state.lastTitle;state.lastTitle=newTitle;
+state.track.title=newTitle;
+state.track.album=(d.item.album&&d.item.album.name)||(d.item.artists?d.item.artists.map(function(a){return a.name}).join(', '):'');
+state.track.art=(d.item.album&&d.item.album.images&&d.item.album.images[0])?d.item.album.images[0].url:state.track.art;
+state.track.duration=d.item.duration_ms;state.track.progress=d.progress_ms||0;state.track.playing=d.is_playing;
+render(changed);
+var lab=$('#sim-label');if(lab)lab.textContent=state.track.title;
+var ic=$('#sim-icon');if(ic)ic.className='fa-solid '+(state.track.playing?'fa-pause':'fa-play');
+}catch(e){console.warn(e)}
+}
+function startPoll(){clearInterval(state.poll);spPoll();state.poll=setInterval(spPoll,1000)}
+function setSpStatus(ok){
+var st=$('#sp-status');if(st)st.innerHTML=ok?'<span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span> Connected — polling every 1s':'<span class="w-2 h-2 rounded-full bg-slate-600"></span> Not connected';
+updateObsUrlPreview();
+}
+function getObsUrl(){
+var redir=getRedirectUri();var base=redir.replace(/\/?$/,'/');
+if((location.protocol==='https:'||location.protocol==='http:')&&location.href.indexOf(location.origin)===0)base=location.origin+location.pathname.split('?')[0];
+var params=new URLSearchParams();params.set('obs','1');params.set('cfg',JSON.stringify(state.cfg));
+var clientId=localStorage.getItem('np_client')||($('#sp-client')&&$('#sp-client').value)||'';
+var access=state.token||localStorage.getItem('np_access')||'';var refresh=state.refresh||localStorage.getItem('np_refresh')||'';
+if(clientId)params.set('cid',clientId);if(access)params.set('at',access);if(refresh)params.set('rt',refresh);
+return base+(base.indexOf('?')>=0?'&':'?')+params.toString();
+}
+function updateObsUrlPreview(){var el=$('#obs-url-preview');if(el)el.value=getObsUrl()}
+function loadObs(){
+const p=new URLSearchParams(location.search);if(p.get('obs')!=='1')return false;
+document.body.classList.add('obs-mode');
+const raw=p.get('cfg');if(raw){try{Object.assign(state.cfg,JSON.parse(raw))}catch(e){try{Object.assign(state.cfg,JSON.parse(decodeURIComponent(raw)))}catch(e2){}}}
+var cid=p.get('cid'),at=p.get('at'),rt=p.get('rt');
+if(cid)localStorage.setItem('np_client',cid);if(at){localStorage.setItem('np_access',at);state.token=at}if(rt){localStorage.setItem('np_refresh',rt);state.refresh=rt}
+$('#obs-root').classList.remove('hidden');$('#obs-root').classList.add('flex');render();
+setInterval(tickProgress,100);if(state.token)startPoll();return true;
+}
+function init(){
+var savedRedir=localStorage.getItem('np_redirect');var redirInput=$('#sp-redirect');
+if(redirInput){if(savedRedir)redirInput.value=savedRedir;else if(location.protocol==='https:'||location.protocol==='http:'){var pathDir=location.origin+location.pathname.replace(/\/[^/]*$/,'/');if(!redirInput.value)redirInput.value=pathDir}
+redirInput.addEventListener('change',function(){localStorage.setItem('np_redirect',redirInput.value.trim())})}
+const saved=localStorage.getItem('np_client');if(saved&&$('#sp-client'))$('#sp-client').value=saved;
+if(loadObs())return;
+$$('.tab-btn').forEach(function(btn){btn.addEventListener('click',function(){
+$$('.tab-btn').forEach(function(b){b.classList.remove('active');b.classList.add('text-slate-400')});
+btn.classList.add('active');btn.classList.remove('text-slate-400');
+$$('.tab-panel').forEach(function(p){p.classList.add('hidden')});
+var panel=$('#panel-'+btn.dataset.tab);if(panel)panel.classList.remove('hidden')})});
+$$('.toggle').forEach(function(t){var k=t.dataset.k;t.classList.toggle('on',!!state.cfg[k]);
+t.addEventListener('click',function(){state.cfg[k]=!state.cfg[k];t.classList.toggle('on',state.cfg[k]);render()})});
+function wireOpts(sel,key){
+$$(sel+' .opt-btn').forEach(function(btn){
+if(state.cfg[key]===btn.dataset.v){$$(sel+' .opt-btn').forEach(function(b){b.classList.remove('active')});btn.classList.add('active')}
+btn.addEventListener('click',function(){state.cfg[key]=btn.dataset.v;$$(sel+' .opt-btn').forEach(function(b){b.classList.toggle('active',b===btn)});render()})})}
+wireOpts('#knob-opts','knob');wireOpts('#layout-opts','layout');wireOpts('#eq-opts','eqStyle');wireOpts('#motion-opts','motion');wireOpts('#cover-anim-opts','coverAnim');
+function bind(id,key,label,suffix){var el=$(id);if(!el)return;el.addEventListener('input',function(){state.cfg[key]=el.type==='range'?+el.value:el.value;if(label)$(label).textContent=state.cfg[key]+(suffix||'');render()})}
+bind('#c-accent','accent');bind('#c-accentEnd','accentEnd');bind('#c-cardBg','cardBg');bind('#c-borderColor','borderColor');
+bind('#c-title','titleColor');bind('#c-album','albumColor');bind('#c-time','timeColor');bind('#c-knobUnfilled','knobUnfilled');
+bind('#c-opacity','opacity','#v-opacity','%');bind('#c-blur','blur','#v-blur','px');bind('#c-glowStr','glowStr','#v-glowStr','%');
+bind('#c-font','font');bind('#c-titleSz','titleSz','#v-titleSz','px');bind('#c-albumSz','albumSz','#v-albumSz','px');
+bind('#c-timeSz','timeSz','#v-timeSz','px');bind('#c-marquee','marqueeSpeed','#v-marquee','s');
+bind('#c-barH','barH','#v-barH','px');bind('#c-knobSz','knobSz','#v-knobSz','px');bind('#c-spin','spinSpeed','#v-spin','s');
+bind('#c-cover','cover','#v-cover','px');bind('#c-coverR','coverR','#v-coverR','px');bind('#c-width','width','#v-width','px');
+bind('#c-radius','radius','#v-radius','px');bind('#c-pad','pad','#v-pad','px');bind('#c-gap','gap','#v-gap','px');bind('#c-scale','scale','#v-scale','%');
+var eqEl=$('#c-eqSpeed');if(eqEl)eqEl.addEventListener('input',function(){state.cfg.eqSpeed=+eqEl.value;$('#v-eqSpeed').textContent=(state.cfg.eqSpeed/10).toFixed(1)+'s';render()});
+var lsEl=$('#c-ls');if(lsEl)lsEl.addEventListener('input',function(){state.cfg.ls=+lsEl.value;$('#v-ls').textContent=(state.cfg.ls/100).toFixed(2);render()});
+var pg=$('#presets');pg.innerHTML=PRESETS.map(function(p,i){return '<button class="rounded-xl p-2.5 text-left border border-white/10 bg-white/5 hover:bg-white/10 transition text-xs" data-i="'+i+'" style="border-left:3px solid '+p.accent+'"><div class="font-bold truncate">'+p.name+'</div></button>'}).join('');
+pg.querySelectorAll('button').forEach(function(btn){btn.addEventListener('click',function(){
+var p=PRESETS[+btn.dataset.i];state.cfg.accent=p.accent;state.cfg.accentEnd=p.accentEnd;state.cfg.cardBg=p.cardBg;state.cfg.font=p.font;
+if(p.motion)state.cfg.motion=p.motion;if(p.coverAnim)state.cfg.coverAnim=p.coverAnim;if(p.gradientBorder!=null)state.cfg.gradientBorder=p.gradientBorder;
+$('#c-accent').value=p.accent;$('#c-accentEnd').value=p.accentEnd;$('#c-cardBg').value=p.cardBg;$('#c-font').value=p.font;
+wireOpts('#motion-opts','motion');wireOpts('#cover-anim-opts','coverAnim');
+$$('.toggle').forEach(function(t){t.classList.toggle('on',!!state.cfg[t.dataset.k])});render(true);toast(p.name)})});
+$$('.stage-bg').forEach(function(btn){btn.addEventListener('click',function(){
+$$('.stage-bg').forEach(function(b){b.classList.remove('ring-2','ring-purple-400')});btn.classList.add('ring-2','ring-purple-400');
+var s=$('#stage');if(btn.dataset.bg==='black')s.style.background='#000';else if(btn.dataset.bg==='dark')s.style.background='#1e293b';
+else s.style.background='repeating-conic-gradient(#222 0% 25%, #333 0% 50%) 50%/12px 12px'})});
+$('#sim-play').addEventListener('click',function(){state.track.playing=!state.track.playing;$('#sim-icon').className='fa-solid '+(state.track.playing?'fa-pause':'fa-play');render()});
+function applyTrack(){var t=state.playlist[state.idx];state.track.title=t.title;state.track.album=t.album;state.track.art=t.art;state.track.duration=t.duration;state.track.progress=0;state.lastTitle=t.title;$('#sim-label').textContent=t.title;render(true)}
+$('#sim-prev').addEventListener('click',function(){state.idx=(state.idx-1+state.playlist.length)%state.playlist.length;applyTrack()});
+$('#sim-next').addEventListener('click',function(){state.idx=(state.idx+1)%state.playlist.length;applyTrack()});
+$('#sim-scrub').addEventListener('input',function(e){state.track.progress=(+e.target.value/100)*state.track.duration;render()});
+$('#btn-copy').addEventListener('click',function(){navigator.clipboard.writeText(getObsUrl()).then(function(){toast('OBS URL copied')})});
+$('#btn-preview').addEventListener('click',function(){window.open(getObsUrl(),'_blank')});
+$('#btn-sp-login').addEventListener('click',spLogin);
+$('#btn-sp-logout').addEventListener('click',function(){localStorage.removeItem('np_access');localStorage.removeItem('np_refresh');state.token=null;clearInterval(state.poll);setSpStatus(false);toast('Disconnected')});
+$('#btn-copy-uri').addEventListener('click',function(){navigator.clipboard.writeText($('#sp-redirect').value).then(function(){toast('URI copied')})});
+spCallback();if(state.token){setSpStatus(true);startPoll()}
+render();setInterval(tickProgress,100);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
 </body>
