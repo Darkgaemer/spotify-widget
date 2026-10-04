@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify OBS Stream Widget Studio</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: 30+ Deep Font Selections across Monospace, Pixel, Sans, Serif, Cyber, Gothic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Bebas+Neue&family=Bungee&family=Cinzel:wght@500;700;900&family=Concert+One&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Creepster&family=Fira+Code:wght@400;600;700&family=Inconsolata:wght@400;700&family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&family=Kanit:wght@400;600;800&family=Monoton&family=Montserrat:wght@400;600;800&family=Orbitron:wght@400;700;900&family=Oswald:wght@400;600;700&family=Outfit:wght@300;400;600;800&family=Pacifico&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;600;800&family=Poppins:wght@300;400;600;800&family=Press+Start+2P&family=Righteous&family=Roboto+Mono:wght@400;700&family=Share+Tech+Mono&family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&family=UnifrakturMaguntia&family=VT323&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              spotify: '#1db954',
+              purple: '#9333ea',
+              magenta: '#c026d3',
+              cyan: '#06b6d4',
+              dark: '#0a0d14',
+              card: '#111827'
+            }
+          },
+          animation: {
+            'spin-slow': 'spin 12s linear infinite',
+            'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'chroma-mesh': 'chromaGradient 10s ease infinite',
+          },
+          keyframes: {
+            chromaGradient: {
+              '0%, 100%': { backgroundPosition: '0% 50%' },
+              '50%': { backgroundPosition: '100% 50%' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar Styles */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(147, 51, 234, 0.5);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(147, 51, 234, 0.8);
+    }
+
+    /* Dynamic CSS Root Variables for Live Customizations */
+    :root {
+      --widget-font: 'Space Mono', monospace;
+      --title-font: 'Space Mono', monospace;
+      --artist-font: 'Space Mono', monospace;
+      
+      --title-font-scale: 1.25rem;
+      --artist-font-scale: 0.875rem;
+      --time-font-scale: 0.8rem;
+      
+      --progress-fill-color: #9333ea;
+      --progress-fill-end: #c026d3;
+      --progress-bg-color: rgba(30, 41, 59, 0.85);
+      --knob-unfilled-color: #ffffff;
+      
+      --card-bg-color: rgba(15, 23, 42, 0.85);
+      --card-border-color: rgba(255, 255, 255, 0.12);
+      --card-border-radius: 1.5rem;
+      --card-blur: 16px;
+      --card-glow-color: rgba(147, 51, 234, 0.35);
+      
+      --title-text-color: #ffffff;
+      --artist-text-color: #cbd5e1;
+      --time-text-color: #94a3b8;
+      
+      --text-stroke-width: 0px;
+      --text-stroke-color: #000000;
+      
+      --widget-width: 580px;
+      --knob-size: 18px;
+      --cover-size: 110px;
+      --cover-radius: 1rem;
+      
+      --marquee-speed: 12s;
+    }
+
+    /* Typography Applied Classes */
+    .widget-font-apply { font-family: var(--widget-font), sans-serif; }
+    .title-font-apply { font-family: var(--title-font), sans-serif; }
+    .artist-font-apply { font-family: var(--artist-font), sans-serif; }
+
+    /* Text Outline / Stroke for Stream Visibility */
+    .text-stroke-apply {
+      text-shadow: 
+        calc(-1 * var(--text-stroke-width)) calc(-1 * var(--text-stroke-width)) 0 var(--text-stroke-color),
+        var(--text-stroke-width) calc(-1 * var(--text-stroke-width)) 0 var(--text-stroke-color),
+        calc(-1 * var(--text-stroke-width)) var(--text-stroke-width) 0 var(--text-stroke-color),
+        var(--text-stroke-width) var(--text-stroke-width) 0 var(--text-stroke-color),
+        0 2px 10px rgba(0,0,0,0.8);
+    }
+
+    /* Gradient Text Fill Option */
+    .text-gradient-fill {
+      background: linear-gradient(135deg, var(--title-text-color) 0%, var(--progress-fill-color) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* KNOB SHAPES: Exact Color Alignment with Fill Bar */
+    .knob-split-circle {
+      width: var(--knob-size);
+      height: var(--knob-size);
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--progress-fill-color) 50%, var(--knob-unfilled-color) 50%);
+      box-shadow: 0 0 10px rgba(0,0,0,0.6);
+      transform: translate(-50%, -50%);
+    }
+
+    .knob-solid-circle {
+      width: var(--knob-size);
+      height: var(--knob-size);
+      border-radius: 50%;
+      background: var(--progress-fill-color);
+      box-shadow: 0 0 12px var(--progress-fill-color);
+      transform: translate(-50%, -50%);
+    }
+
+    .knob-glowing-ring {
+      width: var(--knob-size);
+      height: var(--knob-size);
+      border-radius: 50%;
+      background: #ffffff;
+      border: 3px solid var(--progress-fill-color);
+      box-shadow: 0 0 14px var(--progress-fill-color);
+      transform: translate(-50%, -50%);
+    }
+
+    .knob-diamond {
+      width: var(--knob-size);
+      height: var(--knob-size);
+      border-radius: 2px;
+      background: linear-gradient(135deg, var(--progress-fill-color) 50%, var(--knob-unfilled-color) 50%);
+      transform: translate(-50%, -50%) rotate(45deg);
+      box-shadow: 0 0 8px rgba(0,0,0,0.5);
+    }
+
+    .knob-pill {
+      width: calc(var(--knob-size) * 0.6);
+      height: calc(var(--knob-size) * 1.3);
+      border-radius: 9999px;
+      background: var(--progress-fill-color);
+      box-shadow: 0 0 8px var(--progress-fill-color);
+      transform: translate(-50%, -50%);
+    }
+
+    /* Continuous Text Marquee */
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .animate-marquee {
+      display: inline-block;
+      white-space: nowrap;
+      animation: marqueeScroll var(--marquee-speed) linear infinite;
+    }
+    .animate-marquee:hover { animation-play-state: paused; }
+
+    /* Animated Audio Visualizer Bars */
+    .eq-bar {
+      transition: height 0.15s ease-in-out;
+      border-radius: 9999px;
+    }
+
+    /* Vinyl Record Spin Effect */
+    .vinyl-disc {
+      background: radial-gradient(circle, #18181b 25%, #09090b 26%, #18181b 30%, #09090b 35%, #18181b 50%, #09090b 70%, #27272a 100%);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 0 15px rgba(0,0,0,0.5);
+    }
+
+    /* Cyberpunk Scanline Effect */
+    .cyberpunk-scanlines {
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 4px, 6px 100%;
+    }
+
+    /* Chroma RGB Mesh Animation Background */
+    .chroma-mesh-bg {
+      background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+      background-size: 400% 400%;
+      animation: chromaGradient 12s ease infinite;
+    }
+
+    /* Stream Stage Checkerboard pattern for OBS transparency testing */
+    .checkerboard-bg {
+      background-color: #090d16;
+      background-image: 
+        linear-gradient(45deg, #111827 25%, transparent 25%), 
+        linear-gradient(-45deg, #111827 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #111827 75%), 
+        linear-gradient(-45deg, transparent 75%, #111827 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+    }
+
+    /* Glassmorphism card container */
+    .glass-card-style {
+      background: var(--card-bg-color);
+      backdrop-filter: blur(var(--card-blur));
+      -webkit-backdrop-filter: blur(var(--card-blur));
+      border: 1px solid var(--card-border-color);
+      border-radius: var(--card-border-radius);
+      box-shadow: 0 20px 40px -15px var(--card-glow-color);
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-purple-600 selection:text-white overflow-x-hidden">
+
+  <!-- Accessibility Screen Reader Live Announcer -->
+  <div id="aria-announcer" class="sr-only" aria-live="polite"></div>
+
+  <!-- Offscreen Canvas for Dynamic Album Cover Color Palette Extraction -->
+  <canvas id="palette-canvas" class="hidden" width="100" height="100"></canvas>
+
+  <!-- TOP HEADER STUDIO TOOLBAR -->
+  <header id="studio-header" class="w-full bg-slate-900/90 border-b border-slate-800 p-3.5 px-4 sm:px-6 backdrop-blur-md sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 shadow-xl">
+    
+    <!-- App Brand & Title -->
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-magenta-500 to-green-500 p-0.5 shadow-lg shadow-purple-600/30">
+        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+          <i class="fa-brands fa-spotify text-green-400 text-2xl animate-pulse"></i>
+        </div>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base font-bold tracking-wider text-white">
+            SPOTIFY OBS WIDGET STUDIO
+          </h1>
+          <span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 uppercase tracking-widest">
+            PRO 10,000X
+          </span>
+        </div>
+        <p class="text-xs text-slate-400">Ultra-customizable live music overlay for Twitch, YouTube & Kick streams</p>
+      </div>
+    </div>
+
+    <!-- Quick Actions & Preset Selector -->
+    <div class="flex flex-wrap items-center gap-2">
+      
+      <!-- Spotify Connection Status Badge -->
+      <button onclick="switchTab('spotify')" id="header-status-badge" class="px-3 py-1.5 text-xs font-mono rounded-xl bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition flex items-center gap-1.5">
+        <i class="fa-solid fa-flask"></i>
+        <span>Demo Mode</span>
+      </button>
+
+      <!-- Quick Preset Selector Dropdown -->
+      <div class="relative">
+        <select id="header-preset-select" onchange="loadPresetByName(this.value)" class="bg-slate-950 border border-purple-500/40 text-xs text-purple-300 font-semibold rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer">
+          <option value="" disabled selected>⚡ Quick Presets Library</option>
+          <option value="synthwave">🌆 Synthwave 80s Neon</option>
+          <option value="cyberpunk">🦾 Cyberpunk 2077 Scanlines</option>
+          <option value="lofi">🎧 Lo-Fi Chill Vinyl</option>
+          <option value="glass">❄️ Glassmorphic Frost Deck</option>
+          <option value="neontokyo">🗼 Neon Tokyo Pink</option>
+          <option value="retro">👾 Retro Arcade 8-Bit</option>
+          <option value="minimal">🖤 Minimalist OLED Dark</option>
+          <option value="pastel">🌸 Pastel Dreams</option>
+          <option value="spotify">🟢 Spotify Official Green</option>
+        </select>
+      </div>
+
+      <!-- Copy OBS URL Button -->
+      <button onclick="copyOBSUrl()" class="px-3.5 py-1.5 text-xs bg-gradient-to-r from-purple-600 to-magenta-600 hover:from-purple-500 hover:to-magenta-500 text-white font-bold rounded-xl shadow-lg shadow-purple-600/25 transition flex items-center gap-1.5">
+        <i class="fa-solid fa-link"></i>
+        <span>Copy OBS URL</span>
+      </button>
+
+      <!-- Toggle OBS Fullscreen Test View -->
+      <button onclick="toggleOBSDockMode()" title="Toggle OBS Pure Source View" class="p-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl transition">
+        <i class="fa-solid fa-expand"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN STUDIO SPLIT LAYOUT -->
+  <div id="studio-body" class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+    
+    <!-- LEFT SIDE: LIVE CANVAS VIEWPORT TESTER -->
+    <div class="w-full lg:w-1/2 bg-slate-950 p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-between border-b lg:border-b-0 lg:border-r border-slate-800 relative overflow-y-auto">
+      
+      <!-- Stage Toolbar -->
+      <div id="stage-toolbar" class="w-full max-w-xl flex flex-wrap items-center justify-between gap-2 mb-4 bg-slate-900/80 p-2 px-3 rounded-2xl border border-slate-800 text-xs text-slate-300 backdrop-blur-md">
+        <div class="flex items-center space-x-2">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <i class="fa-solid fa-desktop text-purple-400"></i> Stage Preview:
+          </span>
+          <button onclick="setStageBackground('dark')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Dark</button>
+          <button onclick="setStageBackground('checkerboard')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Checkerboard</button>
+          <button onclick="setStageBackground('gameplay')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Live Game Stream</button>
+          <button onclick="setStageBackground('greenscreen')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Green Screen</button>
+        </div>
+
+        <div class="flex items-center space-x-1.5">
+          <button onclick="resetWidgetToDefaults()" title="Reset All Settings" class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 transition">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN PREVIEW CANVAS CONTAINER -->
+      <div id="preview-stage-container" class="w-full max-w-2xl min-h-[380px] sm:min-h-[440px] rounded-3xl p-6 sm:p-10 flex items-center justify-center transition-all border border-slate-800/80 shadow-2xl relative overflow-hidden bg-slate-950">
+        
+        <!-- Mock Gameplay Stream Background -->
+        <div id="mock-gameplay-bg" class="absolute inset-0 bg-cover bg-center opacity-0 transition-opacity duration-300 pointer-events-none" style="background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop');"></div>
+
+        <!-- Chroma Green Screen Background -->
+        <div id="mock-greenscreen-bg" class="absolute inset-0 bg-[#00ff00] opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+
+        <!-- WIDGET WRAPPER -->
+        <div id="widget-wrapper" class="relative transition-all duration-300 group">
+          
+          <!-- DYNAMIC WIDGET CARD -->
+          <div id="widget-card" class="glass-card-style p-5 sm:p-6 flex flex-row items-center gap-5 sm:gap-7 shadow-2xl transition-all duration-300 widget-font-apply text-stroke-apply relative overflow-hidden" style="width: var(--widget-width);">
+            
+            <!-- Cyberpunk Scanline Layer -->
+            <div id="cyber-scanline-overlay" class="absolute inset-0 pointer-events-none opacity-0 cyberpunk-scanlines z-10"></div>
+
+            <!-- LEFT: ALBUM COVER ART / VINYL DISC -->
+            <div id="album-cover-container" class="relative shrink-0 z-20">
+              
+              <!-- Vinyl Record Disc (Appears for Vinyl / Cassette layout modes) -->
+              <div id="vinyl-disc-elem" class="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full vinyl-disc absolute top-0 left-0 transition-all duration-500 opacity-0 pointer-events-none flex items-center justify-center border-2 border-slate-700/50">
+                <div class="w-10 h-10 rounded-full bg-purple-600 border-2 border-slate-900 flex items-center justify-center">
+                  <div class="w-3 h-3 rounded-full bg-slate-900"></div>
+                </div>
+              </div>
+
+              <!-- Album Cover Box -->
+              <div id="cover-art-box" class="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-2xl overflow-hidden bg-slate-900 border border-slate-700/60 relative flex items-center justify-center transition-all duration-300 shadow-xl group">
+                <img id="album-cover-img" src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=400&auto=format&fit=crop" alt="Album Cover Art" class="w-full h-full object-cover transition-transform duration-500 ease-out" crossorigin="anonymous" onerror="this.src='https://placehold.co/400x400/1e1b4b/c084fc?text=Cover+Art'">
+                
+                <!-- Glass Reflect Layer -->
+                <div id="cover-glass-reflect" class="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent pointer-events-none"></div>
+
+                <!-- Spotify Logo Watermark Badge -->
+                <div id="spotify-logo-badge" class="absolute top-2 left-2 bg-slate-950/80 backdrop-blur-md p-1 px-1.5 rounded-lg border border-slate-700/60 flex items-center justify-center">
+                  <i id="spotify-logo-icon" class="fa-brands fa-spotify text-green-400 text-xs"></i>
+                </div>
+
+                <!-- Explicit Track Badge -->
+                <div id="explicit-badge" class="absolute bottom-2 left-2 bg-slate-950/90 text-slate-200 font-bold text-[9px] px-1.5 py-0.5 rounded border border-slate-700/80 font-mono">
+                  EXPLICIT
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT: TRACK TITLE, ARTIST, AUDIO EQ VISUALIZER & PROGRESS BAR -->
+            <div id="widget-info-container" class="flex-1 min-w-0 flex flex-col justify-center space-y-2.5 z-20">
+              
+              <!-- TOP BAR: Streamer Watermark & Quality Badge -->
+              <div class="flex items-center justify-between gap-2 text-[11px] font-mono">
+                <span id="streamer-handle-badge" class="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 truncate">
+                  @StreamerName
+                </span>
+                <span id="quality-badge" class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700/80 uppercase tracking-wider text-[9px]">
+                  Hi-Res 320kbps
+                </span>
+              </div>
+
+              <!-- TRACK TITLE -->
+              <div class="overflow-hidden w-full relative">
+                <div id="marquee-container" class="whitespace-nowrap">
+                  <h2 id="track-title" class="text-xl sm:text-2xl font-bold tracking-wide drop-shadow-md truncate title-font-apply" style="color: var(--title-text-color);">
+                    Track Title Name
+                  </h2>
+                </div>
+              </div>
+
+              <!-- ARTIST & ALBUM NAME -->
+              <div class="overflow-hidden w-full flex items-center justify-between">
+                <p id="album-artist" class="text-sm font-semibold tracking-tight truncate artist-font-apply" style="color: var(--artist-text-color);">
+                  Artist Name — Album Title
+                </p>
+                
+                <!-- ANIMATED AUDIO EQUALIZER BARS -->
+                <div id="audio-eq-visualizer" class="flex items-end space-x-1 pl-2 shrink-0 h-4">
+                  <!-- Dynamic JS injected EQ bars -->
+                </div>
+              </div>
+
+              <!-- PROGRESS BAR CONTAINER -->
+              <div class="pt-1 flex flex-col space-y-1.5 w-full">
+                
+                <!-- Progress Track Container -->
+                <div id="progress-container" class="relative w-full h-2.5 rounded-full overflow-visible cursor-pointer transition-all shadow-inner" style="background-color: var(--progress-bg-color);" onclick="handleProgressBarClick(event)">
+                  
+                  <!-- Color Fill Bar -->
+                  <div id="progress-fill" class="h-full rounded-full transition-all duration-100 ease-linear shadow-sm" style="width: 45%; background: linear-gradient(90deg, var(--progress-fill-color), var(--progress-fill-end));"></div>
+                  
+                  <!-- Knob Indicator -->
+                  <div id="progress-knob" class="absolute top-1/2 knob-split-circle transition-all duration-100 ease-linear pointer-events-none" style="left: 45%;"></div>
+                </div>
+
+                <!-- TIME DISPLAY -->
+                <div class="flex justify-end items-center pt-0.5">
+                  <span id="time-display" class="text-xs font-mono tracking-widest font-medium" style="color: var(--time-text-color);">
+                    1:30 / 3:20
+                  </span>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- BOTTOM DEMO PLAYBACK CONTROLLER -->
+      <div id="demo-controller-bar" class="w-full max-w-xl bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 mt-4 backdrop-blur-md shadow-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+        
+        <div class="flex items-center space-x-2">
+          <span class="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1">
+            <i class="fa-solid fa-compact-disc"></i> Song:
+          </span>
+          <select id="demo-track-select" onchange="changeDemoTrack(this.value)" class="bg-slate-950 border border-slate-700 text-xs text-slate-200 rounded-xl p-2 focus:ring-2 focus:ring-purple-500 outline-none">
+            <option value="0">🌆 Synthwave - Neon Horizon (Cyberpunk Dreams)</option>
+            <option value="1">🎧 Lo-Fi Beats - Midnight Rain Study (Lofi Volume 1)</option>
+            <option value="2">🎸 Heavy Rock - Electric Overdrive (Apex Rivals)</option>
+            <option value="3">🎷 Jazz Lounge - Moonlight Cocktail (Smooth Sessions)</option>
+            <option value="4">🌸 J-Pop Synth - Sakura Bloom (Tokyo Nights)</option>
+          </select>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button onclick="prevDemoTrack()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+            <i class="fa-solid fa-backward-step"></i>
+          </button>
+          <button id="btn-demo-play-pause" onclick="toggleDemoPlayPause()" class="w-9 h-9 rounded-xl bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-600/30 transition">
+            <i id="demo-play-icon" class="fa-solid fa-pause"></i>
+          </button>
+          <button onclick="nextDemoTrack()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+            <i class="fa-solid fa-forward-step"></i>
+          </button>
+
+          <div class="flex items-center space-x-2 pl-2 border-l border-slate-800">
+            <span class="text-[11px] font-mono text-slate-400" id="demo-scrub-time">1:30</span>
+            <input type="range" id="demo-scrub-slider" min="0" max="100" value="45" oninput="scrubDemoTrack(this.value)" class="w-24 sm:w-32 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500">
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDE: CONTROL STUDIO TABS & CONTROLS -->
+    <div id="studio-controls-sidebar" class="w-full lg:w-1/2 bg-slate-900/60 flex flex-col overflow-hidden">
+      
+      <!-- STUDIO NAVIGATION TABS -->
+      <div class="flex overflow-x-auto border-b border-slate-800 bg-slate-950/80 px-4 space-x-1 scrollbar-none text-xs sticky top-0 z-20">
+        <button onclick="switchTab('layout')" id="tab-btn-layout" class="py-3 px-3.5 font-semibold text-purple-400 border-b-2 border-purple-500 whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fa-solid fa-layer-group"></i> Layouts
+        </button>
+        <button onclick="switchTab('fonts')" id="tab-btn-fonts" class="py-3 px-3.5 font-medium text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fa-solid fa-font"></i> Fonts (30+)
+        </button>
+        <button onclick="switchTab('colors')" id="tab-btn-colors" class="py-3 px-3.5 font-medium text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fa-solid fa-palette"></i> Colors & Dynamic
+        </button>
+        <button onclick="switchTab('album')" id="tab-btn-album" class="py-3 px-3.5 font-medium text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fa-solid fa-record-vinyl"></i> Cover & EQ
+        </button>
+        <button onclick="switchTab('badges')" id="tab-btn-badges" class="py-3 px-3.5 font-medium text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fa-solid fa-id-badge"></i> Badges
+        </button>
+        <button onclick="switchTab('obs')" id="tab-btn-obs" class="py-3 px-3.5 font-medium text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fa-solid fa-video text-purple-400"></i> OBS URL
+        </button>
+        <button onclick="switchTab('spotify')" id="tab-btn-spotify" class="py-3 px-3.5 font-medium text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fa-brands fa-spotify text-green-400"></i> Spotify API
+        </button>
+      </div>
+
+      <!-- SCROLLABLE TAB CONTENTS -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1 text-xs text-slate-300">
+        
+        <!-- TAB 1: LAYOUT MODES & PRESETS -->
+        <div id="tab-content-layout" class="space-y-6">
+          <div>
+            <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-shapes text-purple-400"></i> Widget Layout Mode
+            </h3>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <button onclick="setLayoutMode('horizontal')" id="btn-layout-horizontal" class="p-3 rounded-2xl bg-slate-950 border border-purple-500 text-white font-medium flex flex-col items-center gap-2 hover:border-purple-400 transition">
+                <i class="fa-solid fa-grip-lines text-lg text-purple-400"></i>
+                <span>Horizontal Classic</span>
+              </button>
+              <button onclick="setLayoutMode('pill')" id="btn-layout-pill" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-300 font-medium flex flex-col items-center gap-2 hover:border-purple-400 transition">
+                <i class="fa-solid fa-capsules text-lg text-cyan-400"></i>
+                <span>Minimal Pill</span>
+              </button>
+              <button onclick="setLayoutMode('vertical')" id="btn-layout-vertical" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-300 font-medium flex flex-col items-center gap-2 hover:border-purple-400 transition">
+                <i class="fa-solid fa-ellipsis-vertical text-lg text-magenta-400"></i>
+                <span>Vertical Card</span>
+              </button>
+              <button onclick="setLayoutMode('floating')" id="btn-layout-floating" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-300 font-medium flex flex-col items-center gap-2 hover:border-purple-400 transition">
+                <i class="fa-solid fa-clone text-lg text-green-400"></i>
+                <span>Floating Deck</span>
+              </button>
+              <button onclick="setLayoutMode('cyberpunk')" id="btn-layout-cyberpunk" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-300 font-medium flex flex-col items-center gap-2 hover:border-purple-400 transition">
+                <i class="fa-solid fa-bolt text-lg text-yellow-400"></i>
+                <span>Cyberpunk Glow</span>
+              </button>
+              <button onclick="setLayoutMode('vinyl')" id="btn-layout-vinyl" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-300 font-medium flex flex-col items-center gap-2 hover:border-purple-400 transition">
+                <i class="fa-solid fa-record-vinyl text-lg text-rose-400"></i>
+                <span>Spinning Vinyl</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Widget Sizing Controls -->
+          <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 space-y-4">
+            <h4 class="font-bold text-white uppercase text-[11px] tracking-wider">Dimensions & Sizing</h4>
+            
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-300">Widget Width</span>
+                <span id="val-widget-width" class="font-mono text-purple-400">580px</span>
+              </div>
+              <input type="range" id="input-widget-width" min="360" max="850" value="580" oninput="updateCustomizations()" class="w-full accent-purple-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-slate-300 mb-1">Corner Radius</label>
+                <select id="input-border-radius" onchange="updateCustomizations()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-white">
+                  <option value="1.5rem">Extra Rounded (24px)</option>
+                  <option value="1rem">Standard (16px)</option>
+                  <option value="0.5rem">Slight (8px)</option>
+                  <option value="9999px">Full Capsule Pill</option>
+                  <option value="0px">Sharp Square (0px)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-slate-300 mb-1">Card Background Glass</label>
+                <select id="input-bg-style" onchange="updateCustomizations()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-white">
+                  <option value="glass">Dark Glassmorphism</option>
+                  <option value="transparent">100% Transparent (OBS Overlay)</option>
+                  <option value="solid-dark">Solid Slate Black</option>
+                  <option value="solid-black">OLED Pure Black</option>
+                  <option value="chroma-mesh">Animated Chroma RGB Mesh</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: TYPOGRAPHY & 30+ FONTS -->
+        <div id="tab-content-fonts" class="space-y-6 hidden">
+          <div>
+            <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-font text-purple-400"></i> Typography & Fonts (30+ Options)
+            </h3>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block font-semibold text-slate-200 mb-1">Track Title Font</label>
+                <select id="input-title-font" onchange="updateCustomizations()" class="w-full bg-slate-950 border border-slate-700 text-xs text-white rounded-xl p-2.5">
+                  <optgroup label="Monospace & Code">
+                    <option value="Space Mono" selected>Space Mono (Diagram Default)</option>
+                    <option value="Fira Code">Fira Code</option>
+                    <option value="JetBrains Mono">JetBrains Mono</option>
+                    <option value="Courier Prime">Courier Prime</option>
+                    <option value="Share Tech Mono">Share Tech Mono</option>
+                    <option value="Inconsolata">Inconsolata</option>
+                    <option value="Roboto Mono">Roboto Mono</option>
+                  </optgroup>
+                  <optgroup label="Pixel Retro Arcade">
+                    <option value="VT323">VT323 Retro Terminal</option>
+                    <option value="Press Start 2P">Press Start 2P 8-Bit</option>
+                    <option value="Silkscreen">Silkscreen Pixel</option>
+                  </optgroup>
+                  <optgroup label="Futuristic & Cyber">
+                    <option value="Orbitron">Orbitron Cyber</option>
+                    <option value="Audiowide">Audiowide Tech</option>
+                    <option value="Bungee">Bungee Heavy</option>
+                  </optgroup>
+                  <optgroup label="Modern Sans-Serif">
+                    <option value="Inter">Inter Clean</option>
+                    <option value="Poppins">Poppins Geometric</option>
+                    <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                    <option value="Montserrat">Montserrat Bold</option>
+                    <option value="Outfit">Outfit Modern</option>
+                    <option value="Syne">Syne Display</option>
+                    <option value="Righteous">Righteous Rounded</option>
+                  </optgroup>
+                  <optgroup label="Gothic, Display & Serif">
+                    <option value="Playfair Display">Playfair Display Serif</option>
+                    <option value="Cinzel">Cinzel Regal</option>
+                    <option value="UnifrakturMaguntia">Unifraktur Gothic</option>
+                    <option value="Monoton">Monoton Retro Stripes</option>
+                    <option value="Permanent Marker">Permanent Marker</option>
+                    <option value="Pacifico">Pacifico Cursive</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-semibold text-slate-200 mb-1">Title Font Scale</label>
+                  <input type="range" id="input-title-scale" min="0.8" max="1.8" step="0.05" value="1.25" oninput="updateCustomizations()" class="w-full accent-purple-500">
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-200 mb-1">Text Outline / Stroke</label>
+                  <select id="input-text-stroke" onchange="updateCustomizations()" class="w-full bg-slate-950 border border-slate-700 text-xs text-white rounded-xl p-2">
+                    <option value="0">None (Clean)</option>
+                    <option value="1">Thin Black (1px)</option>
+                    <option value="2">Medium Black (2px)</option>
+                    <option value="3">Heavy Black (3px)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                <span class="font-semibold text-slate-200">Gradient Fill on Track Title</span>
+                <input type="checkbox" id="input-title-gradient" onchange="updateCustomizations()" class="w-4 h-4 accent-purple-600 rounded">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: COLORS, DYNAMIC THEME & KNOB SHAPES -->
+        <div id="tab-content-colors" class="space-y-6 hidden">
+          <div>
+            <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-palette text-purple-400"></i> Color Customization & Dynamic Theme
+            </h3>
+
+            <!-- Dynamic Palette Extractor Toggle -->
+            <div class="bg-gradient-to-r from-purple-950/40 to-slate-900 border border-purple-500/30 p-4 rounded-2xl mb-4 space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="font-bold text-white flex items-center gap-1.5">
+                    <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> Dynamic Album Palette Sampling
+                  </h4>
+                  <p class="text-[11px] text-slate-400">Extracts dynamic colors directly from album art to tint ambient glows & bar!</p>
+                </div>
+                <input type="checkbox" id="input-dynamic-theme" onchange="toggleDynamicTheme(this.checked)" class="w-5 h-5 accent-purple-600 rounded cursor-pointer">
+              </div>
+            </div>
+
+            <!-- Knob Style Choice -->
+            <div class="space-y-2 mb-4">
+              <label class="block font-semibold text-slate-200">Progress Bar Knob Shape</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button onclick="setKnobShape('split')" id="btn-knob-split" class="p-2.5 rounded-xl bg-purple-600/20 border border-purple-500 text-white flex flex-col items-center gap-1">
+                  <span class="w-4 h-4 rounded-full border border-purple-400 bg-gradient-to-r from-purple-600 to-white"></span>
+                  <span>Split Circle</span>
+                </button>
+                <button onclick="setKnobShape('solid')" id="btn-knob-solid" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 flex flex-col items-center gap-1">
+                  <span class="w-4 h-4 rounded-full bg-purple-600"></span>
+                  <span>Solid Circle</span>
+                </button>
+                <button onclick="setKnobShape('ring')" id="btn-knob-ring" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 flex flex-col items-center gap-1">
+                  <span class="w-4 h-4 rounded-full bg-white border-2 border-purple-500"></span>
+                  <span>Glowing Ring</span>
+                </button>
+                <button onclick="setKnobShape('diamond')" id="btn-knob-diamond" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 flex flex-col items-center gap-1">
+                  <span class="w-3.5 h-3.5 rotate-45 bg-purple-600"></span>
+                  <span>Diamond</span>
+                </button>
+                <button onclick="setKnobShape('pill')" id="btn-knob-pill" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 flex flex-col items-center gap-1">
+                  <span class="w-2 h-4 rounded-full bg-purple-600"></span>
+                  <span>Pill Bar</span>
+                </button>
+                <button onclick="setKnobShape('hidden')" id="btn-knob-hidden" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 flex flex-col items-center gap-1">
+                  <span class="text-xs">🚫</span>
+                  <span>Hidden</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Color Picker Inputs -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold text-slate-200 mb-1">Progress Fill Primary</label>
+                <input type="color" id="input-fill-color" value="#9333ea" onchange="updateCustomizations()" class="w-full h-9 bg-transparent rounded-lg cursor-pointer border border-slate-700">
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-200 mb-1">Progress Fill Gradient End</label>
+                <input type="color" id="input-fill-end" value="#c026d3" onchange="updateCustomizations()" class="w-full h-9 bg-transparent rounded-lg cursor-pointer border border-slate-700">
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-200 mb-1">Track Title Text Color</label>
+                <input type="color" id="input-title-color" value="#ffffff" onchange="updateCustomizations()" class="w-full h-9 bg-transparent rounded-lg cursor-pointer border border-slate-700">
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-200 mb-1">Artist & Album Text Color</label>
+                <input type="color" id="input-artist-color" value="#cbd5e1" onchange="updateCustomizations()" class="w-full h-9 bg-transparent rounded-lg cursor-pointer border border-slate-700">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: ALBUM COVER & AUDIO EQ VISUALIZER -->
+        <div id="tab-content-album" class="space-y-6 hidden">
+          <div>
+            <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-record-vinyl text-purple-400"></i> Cover Art & Audio EQ Soundwaves
+            </h3>
+
+            <!-- Audio Equalizer Bars Customization -->
+            <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 space-y-3">
+              <h4 class="font-bold text-white uppercase text-[11px] tracking-wider">Animated Equalizer Bars</h4>
+              
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-semibold text-slate-200 mb-1">Bar Count</label>
+                  <select id="input-eq-count" onchange="renderEqualizerBars(); updateCustomizations();" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-white">
+                    <option value="0">Disabled</option>
+                    <option value="3">3 Bars (Minimal)</option>
+                    <option value="5" selected>5 Bars (Standard)</option>
+                    <option value="8">8 Bars (High)</option>
+                    <option value="12">12 Bars (Full Wave)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block font-semibold text-slate-200 mb-1">Bar Height</label>
+                  <input type="range" id="input-eq-height" min="12" max="28" value="18" oninput="updateCustomizations()" class="w-full accent-purple-500">
+                </div>
+              </div>
+            </div>
+
+            <!-- Custom Cover Upload Option for Demo Mode -->
+            <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 space-y-2 mt-4">
+              <h4 class="font-bold text-white uppercase text-[11px] tracking-wider">Custom Demo Cover Upload</h4>
+              <input type="file" id="input-custom-cover" accept="image/*" onchange="handleCustomCoverUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-purple-600 file:text-white file:font-semibold">
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: BADGES & WATERMARKS -->
+        <div id="tab-content-badges" class="space-y-6 hidden">
+          <div>
+            <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-id-badge text-purple-400"></i> Streamer Handle & Badges
+            </h3>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block font-semibold text-slate-200 mb-1">Streamer Channel Watermark Badge</label>
+                <input type="text" id="input-streamer-handle" value="@StreamerName" oninput="updateCustomizations()" placeholder="@YourChannelName" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white">
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex items-center justify-between bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                  <span class="font-semibold text-slate-200">Show Explicit Tag</span>
+                  <input type="checkbox" id="input-show-explicit" checked onchange="updateCustomizations()" class="w-4 h-4 accent-purple-600 rounded">
+                </div>
+
+                <div class="flex items-center justify-between bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                  <span class="font-semibold text-slate-200">Show Spotify Logo</span>
+                  <input type="checkbox" id="input-show-spotify-logo" checked onchange="updateCustomizations()" class="w-4 h-4 accent-purple-600 rounded">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 6: OBS URL & CUSTOM CSS EXPORTER -->
+        <div id="tab-content-obs" class="space-y-6 hidden">
+          <div>
+            <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-video text-purple-400"></i> OBS Browser Source Generator
+            </h3>
+
+            <div class="bg-purple-950/30 border border-purple-500/30 p-4 rounded-2xl space-y-3">
+              <p class="text-slate-300 text-xs">
+                Copy this URL and paste it into OBS Studio as a <strong>Browser Source</strong> (Recommended Size: 640x220px).
+              </p>
+
+              <div class="flex gap-2">
+                <input type="text" id="input-obs-url" readonly class="flex-1 bg-slate-950 border border-slate-800 text-slate-300 font-mono text-xs rounded-xl p-2.5 select-all">
+                <button onclick="copyOBSUrl()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl transition">
+                  Copy
+                </button>
+              </div>
+              <span id="copy-toast" class="text-green-400 text-[11px] hidden"><i class="fa-solid fa-check"></i> OBS Browser Source URL copied to clipboard!</span>
+            </div>
+
+            <!-- Export Custom CSS snippet -->
+            <div class="mt-4 bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white uppercase text-[11px] tracking-wider">Custom OBS CSS Code</span>
+                <button onclick="copyCustomCSS()" class="text-purple-400 hover:text-purple-300 font-semibold text-xs">Copy CSS</button>
+              </div>
+              <textarea id="output-custom-css" readonly rows="4" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-[11px] font-mono text-slate-300 select-all"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 7: SPOTIFY API OAuth PKCE -->
+        <div id="tab-content-spotify" class="space-y-6 hidden">
+          <div>
+            <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              <i class="fa-brands fa-spotify text-green-400"></i> Real-Time Spotify OAuth Integration
+            </h3>
+
+            <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 space-y-4">
+              <p class="text-slate-400 text-xs">
+                Connect your Spotify account using client-side PKCE OAuth. No secret keys or servers needed!
+              </p>
+
+              <div class="space-y-2">
+                <label class="block font-semibold text-slate-200">Spotify Client ID:</label>
+                <input type="text" id="input-spotify-client-id" placeholder="Paste Spotify Client ID..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white">
+                
+                <p class="text-[11px] text-slate-500">
+                  Redirect URI for Spotify Developer Portal: 
+                  <code id="spotify-redirect-uri" class="bg-slate-900 px-1.5 py-0.5 rounded text-purple-300 select-all font-mono"></code>
+                </p>
+              </div>
+
+              <div class="flex gap-2 pt-2">
+                <button id="btn-connect-spotify" onclick="startSpotifyPKCEAuth()" class="px-4 py-2.5 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl shadow-lg shadow-green-600/20 transition flex items-center gap-2">
+                  <i class="fa-solid fa-plug"></i> Connect Live Spotify
+                </button>
+                <button id="btn-disconnect-spotify" onclick="disconnectSpotify()" class="hidden px-4 py-2.5 bg-rose-600/20 border border-rose-500/40 text-rose-300 hover:bg-rose-600 hover:text-white font-bold rounded-xl transition">
+                  Disconnect
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // PRESET LIBRARY DEFINITIONS
+    const PRESETS = {
+      synthwave: {
+        layoutMode: 'vinyl',
+        titleFont: 'Orbitron',
+        fillColor: '#ec4899',
+        fillEnd: '#06b6d4',
+        titleColor: '#ffffff',
+        artistColor: '#f472b6',
+        bgStyle: 'glass',
+        knobShape: 'solid',
+        borderRad: '1.5rem',
+        width: 580,
+        textStroke: 0,
+        streamerHandle: '@SynthwaveRider'
+      },
+      cyberpunk: {
+        layoutMode: 'cyberpunk',
+        titleFont: 'Share Tech Mono',
+        fillColor: '#facc15',
+        fillEnd: '#06b6d4',
+        titleColor: '#facc15',
+        artistColor: '#22d3ee',
+        bgStyle: 'solid-dark',
+        knobShape: 'diamond',
+        borderRad: '0px',
+        width: 620,
+        textStroke: 2,
+        streamerHandle: '@CyberPunk2077'
+      },
+      lofi: {
+        layoutMode: 'floating',
+        titleFont: 'Space Mono',
+        fillColor: '#a855f7',
+        fillEnd: '#ec4899',
+        titleColor: '#f3e8ff',
+        artistColor: '#e9d5ff',
+        bgStyle: 'glass',
+        knobShape: 'split',
+        borderRad: '1.5rem',
+        width: 560,
+        textStroke: 0,
+        streamerHandle: '@LofiChillRoom'
+      },
+      glass: {
+        layoutMode: 'pill',
+        titleFont: 'Outfit',
+        fillColor: '#38bdf8',
+        fillEnd: '#818cf8',
+        titleColor: '#ffffff',
+        artistColor: '#cbd5e1',
+        bgStyle: 'glass',
+        knobShape: 'ring',
+        borderRad: '9999px',
+        width: 580,
+        textStroke: 0,
+        streamerHandle: '@FrostyGamer'
+      },
+      neontokyo: {
+        layoutMode: 'horizontal',
+        titleFont: 'Righteous',
+        fillColor: '#f43f5e',
+        fillEnd: '#d946ef',
+        titleColor: '#ffffff',
+        artistColor: '#f472b6',
+        bgStyle: 'glass',
+        knobShape: 'pill',
+        borderRad: '1.5rem',
+        width: 600,
+        textStroke: 1,
+        streamerHandle: '@TokyoNights'
+      },
+      retro: {
+        layoutMode: 'horizontal',
+        titleFont: 'Press Start 2P',
+        fillColor: '#22c55e',
+        fillEnd: '#10b981',
+        titleColor: '#22c55e',
+        artistColor: '#a7f3d0',
+        bgStyle: 'solid-black',
+        knobShape: 'solid',
+        borderRad: '0px',
+        width: 640,
+        textStroke: 0,
+        streamerHandle: '@PixelArcade'
+      },
+      minimal: {
+        layoutMode: 'pill',
+        titleFont: 'Inter',
+        fillColor: '#ffffff',
+        fillEnd: '#94a3b8',
+        titleColor: '#ffffff',
+        artistColor: '#64748b',
+        bgStyle: 'solid-black',
+        knobShape: 'hidden',
+        borderRad: '9999px',
+        width: 520,
+        textStroke: 0,
+        streamerHandle: '@Minimalist'
+      },
+      pastel: {
+        layoutMode: 'floating',
+        titleFont: 'Poppins',
+        fillColor: '#f472b6',
+        fillEnd: '#fb7185',
+        titleColor: '#ffffff',
+        artistColor: '#fbcfe8',
+        bgStyle: 'glass',
+        knobShape: 'split',
+        borderRad: '1.5rem',
+        width: 560,
+        textStroke: 0,
+        streamerHandle: '@PastelDream'
+      },
+      spotify: {
+        layoutMode: 'horizontal',
+        titleFont: 'Plus Jakarta Sans',
+        fillColor: '#1db954',
+        fillEnd: '#1ed760',
+        titleColor: '#ffffff',
+        artistColor: '#b3b3b3',
+        bgStyle: 'solid-dark',
+        knobShape: 'solid',
+        borderRad: '1rem',
+        width: 580,
+        textStroke: 0,
+        streamerHandle: '@SpotifyOfficial'
+      }
+    };
+
+    // DEMO TRACK DATA
+    const DEMO_TRACKS = [
+      {
+        title: "Neon Horizon Synthwave",
+        artist: "Cyberpunk Echoes",
+        album: "Retrowave Dreams",
+        cover: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=400&auto=format&fit=crop",
+        duration_ms: 224000,
+        progress_ms: 100000
+      },
+      {
+        title: "Midnight Rain Lofi Study",
+        artist: "Chill Beats Collective",
+        album: "Lofi Volume 1",
+        cover: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=400&auto=format&fit=crop",
+        duration_ms: 181000,
+        progress_ms: 81000
+      },
+      {
+        title: "Electric Overdrive Rock",
+        artist: "Apex Rivals Band",
+        album: "High Voltage '26",
+        cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=400&auto=format&fit=crop",
+        duration_ms: 210000,
+        progress_ms: 130000
+      },
+      {
+        title: "Moonlight Lounge Jazz",
+        artist: "Smooth Sax Quartet",
+        album: "Late Night Sessions",
+        cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=400&auto=format&fit=crop",
+        duration_ms: 195000,
+        progress_ms: 90000
+      },
+      {
+        title: "Sakura Bloom Synth Pop",
+        artist: "Tokyo Nights Project",
+        album: "Shinjuku Lights",
+        cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=400&auto=format&fit=crop",
+        duration_ms: 178000,
+        progress_ms: 60000
+      }
+    ];
+
+    // MAIN GLOBAL STATE
+    let state = {
+      // Spotify Auth
+      isSpotifyConnected: false,
+      accessToken: localStorage.getItem('spotify_access_token') || null,
+      refreshToken: localStorage.getItem('spotify_refresh_token') || null,
+      tokenExpiresAt: parseInt(localStorage.getItem('spotify_token_expires_at') || '0'),
+      clientId: localStorage.getItem('spotify_client_id') || '',
+
+      // Current Track
+      track: DEMO_TRACKS[0],
+      isPlaying: true,
+      demoIndex: 0,
+
+      // Customization Properties
+      layoutMode: 'horizontal',
+      titleFont: 'Space Mono',
+      titleScale: 1.25,
+      fillColor: '#9333ea',
+      fillEnd: '#c026d3',
+      titleColor: '#ffffff',
+      artistColor: '#cbd5e1',
+      bgStyle: 'glass',
+      knobShape: 'split',
+      borderRad: '1.5rem',
+      widgetWidth: 580,
+      textStroke: 0,
+      titleGradient: false,
+      dynamicTheme: false,
+      eqCount: 5,
+      eqHeight: 18,
+      streamerHandle: '@StreamerName',
+      showExplicit: true,
+      showSpotifyLogo: true,
+
+      // Timers
+      pollInterval: null,
+      tickerInterval: null,
+      isOBSSource: false
+    };
+
+    // DOM LOAD INITIALIZER
+    window.addEventListener('DOMContentLoaded', async () => {
+      // Set Redirect URI for Spotify Dashboard
+      document.getElementById('spotify-redirect-uri').textContent = window.location.origin + window.location.pathname;
+
+      // Read OBS URL parameters if embedded in OBS
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('mode') === 'obs') {
+        enableOBSDockMode();
+      }
+
+      // Read encoded URL parameter payload if exists
+      if (urlParams.has('config')) {
+        try {
+          const decoded = JSON.parse(atob(urlParams.get('config')));
+          Object.assign(state, decoded);
+        } catch (e) {
+          console.warn("Failed to parse config payload from URL", e);
+        }
+      }
+
+      // Handle Spotify OAuth Callback
+      if (urlParams.has('code')) {
+        await handlePKCECallback(urlParams.get('code'));
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      // Sync Inputs from state
+      syncInputsFromState();
+      
+      // Render Audio Visualizer EQ bars
+      renderEqualizerBars();
+
+      // Apply initial styling
+      updateCustomizations();
+
+      // Spotify state check
+      if (state.accessToken) {
+        state.isSpotifyConnected = true;
+        updateConnectionUI(true);
+        startSpotifyPolling();
+      }
+
+      // Start playback ticker
+      startLocalTicker();
+    });
+
+    // Extract dominant palette colors from album art image
+    function extractCoverPalette() {
+      if (!state.dynamicTheme) return;
+
+      const img = document.getElementById('album-cover-img');
+      const canvas = document.getElementById('palette-canvas');
+      const ctx = canvas.getContext('2d');
+
+      try {
+        ctx.drawImage(img, 0, 0, 100, 100);
+        const data = ctx.getImageData(10, 10, 80, 80).data;
+        let r = 0, g = 0, b = 0;
+        for (let i = 0; i < data.length; i += 16) {
+          r += data[i];
+          g += data[i+1];
+          b += data[i+2];
+        }
+        const count = data.length / 16;
+        r = Math.floor(r / count);
+        g = Math.floor(g / count);
+        b = Math.floor(b / count);
+
+        const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+        document.documentElement.style.setProperty('--card-glow-color', hex + '80');
+        document.documentElement.style.setProperty('--progress-fill-color', hex);
+      } catch (err) {
+        // Fallback if cross-origin image blocks canvas read
+      }
+    }
+
+    // UPDATE ALL CUSTOMIZATIONS DYNAMICALLY
+    function updateCustomizations() {
+      // Gather inputs
+      state.titleFont = document.getElementById('input-title-font').value;
+      state.titleScale = parseFloat(document.getElementById('input-title-scale').value);
+      state.fillColor = document.getElementById('input-fill-color').value;
+      state.fillEnd = document.getElementById('input-fill-end').value;
+      state.titleColor = document.getElementById('input-title-color').value;
+      state.artistColor = document.getElementById('input-artist-color').value;
+      state.bgStyle = document.getElementById('input-bg-style').value;
+      state.borderRad = document.getElementById('input-border-radius').value;
+      state.widgetWidth = parseInt(document.getElementById('input-widget-width').value);
+      state.textStroke = parseInt(document.getElementById('input-text-stroke').value);
+      state.titleGradient = document.getElementById('input-title-gradient').checked;
+      state.streamerHandle = document.getElementById('input-streamer-handle').value;
+      state.showExplicit = document.getElementById('input-show-explicit').checked;
+      state.showSpotifyLogo = document.getElementById('input-show-spotify-logo').checked;
+      state.eqCount = parseInt(document.getElementById('input-eq-count').value);
+      state.eqHeight = parseInt(document.getElementById('input-eq-height').value);
+
+      // DOM Updates
+      document.getElementById('val-widget-width').textContent = `${state.widgetWidth}px`;
+      document.getElementById('streamer-handle-badge').textContent = state.streamerHandle || '@Streamer';
+
+      // Badges visibility
+      document.getElementById('explicit-badge').style.display = state.showExplicit ? 'block' : 'none';
+      document.getElementById('spotify-logo-badge').style.display = state.showSpotifyLogo ? 'block' : 'none';
+
+      // Apply CSS Root Variables
+      document.documentElement.style.setProperty('--title-font', `'${state.titleFont}'`);
+      document.documentElement.style.setProperty('--progress-fill-color', state.fillColor);
+      document.documentElement.style.setProperty('--progress-fill-end', state.fillEnd);
+      document.documentElement.style.setProperty('--title-text-color', state.titleColor);
+      document.documentElement.style.setProperty('--artist-text-color', state.artistColor);
+      document.documentElement.style.setProperty('--card-border-radius', state.borderRad);
+      document.documentElement.style.setProperty('--widget-width', `${state.widgetWidth}px`);
+      document.documentElement.style.setProperty('--text-stroke-width', `${state.textStroke}px`);
+
+      // Title Gradient class
+      const titleElem = document.getElementById('track-title');
+      if (state.titleGradient) {
+        titleElem.classList.add('text-gradient-fill');
+      } else {
+        titleElem.classList.remove('text-gradient-fill');
+      }
+
+      // Card Background style
+      const card = document.getElementById('widget-card');
+      card.className = "glass-card-style p-5 sm:p-6 flex flex-row items-center gap-5 sm:gap-7 shadow-2xl transition-all duration-300 widget-font-apply text-stroke-apply relative overflow-hidden";
+      
+      if (state.bgStyle === 'transparent') {
+        card.style.background = 'transparent';
+        card.style.border = 'none';
+        card.style.backdropFilter = 'none';
+      } else if (state.bgStyle === 'solid-dark') {
+        card.style.background = '#0d1321';
+        card.style.border = '1px solid #1e293b';
+      } else if (state.bgStyle === 'solid-black') {
+        card.style.background = '#000000';
+        card.style.border = '1px solid #18181b';
+      } else if (state.bgStyle === 'chroma-mesh') {
+        card.classList.add('chroma-mesh-bg');
+      }
+
+      // Cyberpunk Overlay
+      const scanlines = document.getElementById('cyber-scanline-overlay');
+      if (state.layoutMode === 'cyberpunk') {
+        scanlines.classList.remove('opacity-0');
+      } else {
+        scanlines.classList.add('opacity-0');
+      }
+
+      // Vinyl Record Offset
+      const vinylDisc = document.getElementById('vinyl-disc-elem');
+      if (state.layoutMode === 'vinyl') {
+        vinylDisc.classList.remove('opacity-0');
+        vinylDisc.style.transform = 'translateX(35px)';
+        if (state.isPlaying) vinylDisc.classList.add('animate-spin-slow');
+      } else {
+        vinylDisc.classList.add('opacity-0');
+        vinylDisc.style.transform = 'translateX(0px)';
+        vinylDisc.classList.remove('animate-spin-slow');
+      }
+
+      updateKnobClass();
+      generateOBSUrl();
+      generateCustomCSS();
+    }
+
+    function setKnobShape(shape) {
+      state.knobShape = shape;
+      const shapes = ['split', 'solid', 'ring', 'diamond', 'pill', 'hidden'];
+      shapes.forEach(s => {
+        const btn = document.getElementById(`btn-knob-${s}`);
+        if (btn) {
+          if (s === shape) {
+            btn.className = "p-2.5 rounded-xl bg-purple-600/20 border border-purple-500 text-white flex flex-col items-center gap-1";
+          } else {
+            btn.className = "p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 flex flex-col items-center gap-1";
+          }
+        }
+      });
+      updateKnobClass();
+      generateOBSUrl();
+    }
+
+    function updateKnobClass() {
+      const knob = document.getElementById('progress-knob');
+      knob.className = "absolute top-1/2 transition-all duration-100 ease-linear pointer-events-none ";
+      
+      if (state.knobShape === 'split') knob.classList.add('knob-split-circle');
+      else if (state.knobShape === 'solid') knob.classList.add('knob-solid-circle');
+      else if (state.knobShape === 'ring') knob.classList.add('knob-glowing-ring');
+      else if (state.knobShape === 'diamond') knob.classList.add('knob-diamond');
+      else if (state.knobShape === 'pill') knob.classList.add('knob-pill');
+      else if (state.knobShape === 'hidden') knob.classList.add('hidden');
+    }
+
+    function setLayoutMode(mode) {
+      state.layoutMode = mode;
+      const modes = ['horizontal', 'pill', 'vertical', 'floating', 'cyberpunk', 'vinyl'];
+      modes.forEach(m => {
+        const btn = document.getElementById(`btn-layout-${m}`);
+        if (btn) {
+          btn.className = m === mode ? 
+            "p-3 rounded-2xl bg-purple-600/20 border border-purple-500 text-white font-medium flex flex-col items-center gap-2 transition" :
+            "p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-300 font-medium flex flex-col items-center gap-2 hover:border-purple-400 transition";
+        }
+      });
+
+      const card = document.getElementById('widget-card');
+      if (mode === 'vertical') {
+        card.style.flexDirection = 'column';
+        card.style.textAlign = 'center';
+      } else {
+        card.style.flexDirection = 'row';
+        card.style.textAlign = 'left';
+      }
+
+      updateCustomizations();
+    }
+
+    function renderEqualizerBars() {
+      const container = document.getElementById('audio-eq-visualizer');
+      container.innerHTML = '';
+
+      if (state.eqCount === 0) return;
+
+      for (let i = 0; i < state.eqCount; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'w-1 bg-purple-400 eq-bar animate-pulse';
+        bar.style.height = `${Math.floor(Math.random() * state.eqHeight) + 4}px`;
+        bar.style.animationDelay = `${i * 120}ms`;
+        container.appendChild(bar);
+      }
+    }
+
+    function loadPresetByName(name) {
+      if (!PRESETS[name]) return;
+      const p = PRESETS[name];
+      
+      state.layoutMode = p.layoutMode;
+      state.titleFont = p.titleFont;
+      state.fillColor = p.fillColor;
+      state.fillEnd = p.fillEnd;
+      state.titleColor = p.titleColor;
+      state.artistColor = p.artistColor;
+      state.bgStyle = p.bgStyle;
+      state.knobShape = p.knobShape;
+      state.borderRad = p.borderRad;
+      state.widgetWidth = p.width;
+      state.textStroke = p.textStroke;
+      state.streamerHandle = p.streamerHandle;
+
+      syncInputsFromState();
+      setLayoutMode(p.layoutMode);
+      setKnobShape(p.knobShape);
+      updateCustomizations();
+    }
+
+    function syncInputsFromState() {
+      document.getElementById('input-title-font').value = state.titleFont;
+      document.getElementById('input-title-scale').value = state.titleScale;
+      document.getElementById('input-fill-color').value = state.fillColor;
+      document.getElementById('input-fill-end').value = state.fillEnd;
+      document.getElementById('input-title-color').value = state.titleColor;
+      document.getElementById('input-artist-color').value = state.artistColor;
+      document.getElementById('input-bg-style').value = state.bgStyle;
+      document.getElementById('input-border-radius').value = state.borderRad;
+      document.getElementById('input-widget-width').value = state.widgetWidth;
+      document.getElementById('input-text-stroke').value = state.textStroke;
+      document.getElementById('input-streamer-handle').value = state.streamerHandle;
+    }
+
+    async function startSpotifyPKCEAuth() {
+      const clientId = document.getElementById('input-spotify-client-id').value.trim();
+      if (!clientId) {
+        alert("Please enter a valid Spotify Client ID!");
+        return;
+      }
+
+      state.clientId = clientId;
+      localStorage.setItem('spotify_client_id', clientId);
+
+      const codeVerifier = generateRandomString(64);
+      const hashed = await sha256(codeVerifier);
+      const codeChallenge = base64encode(hashed);
+
+      localStorage.setItem('spotify_code_verifier', codeVerifier);
+
+      const redirectUri = window.location.origin + window.location.pathname;
+      const scope = 'user-read-currently-playing user-read-playback-state';
+
+      const authUrl = new URL("https://accounts.spotify.com/authorize");
+      authUrl.search = new URLSearchParams({
+        response_type: 'code',
+        client_id: clientId,
+        scope: scope,
+        code_challenge_method: 'S256',
+        code_challenge: codeChallenge,
+        redirect_uri: redirectUri
+      }).toString();
+
+      window.location.href = authUrl.toString();
+    }
+
+    async function handlePKCECallback(code) {
+      const codeVerifier = localStorage.getItem('spotify_code_verifier');
+      const redirectUri = window.location.origin + window.location.pathname;
+      const clientId = localStorage.getItem('spotify_client_id');
+
+      if (!codeVerifier || !clientId) return;
+
+      try {
+        const response = await fetch('https://accounts.spotify.com/api/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: clientId,
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: redirectUri,
+            code_verifier: codeVerifier
+          })
+        });
+
+        const data = await response.json();
+        if (data.access_token) {
+          state.accessToken = data.access_token;
+          state.refreshToken = data.refresh_token;
+          state.tokenExpiresAt = Date.now() + (data.expires_in * 1000);
+
+          localStorage.setItem('spotify_access_token', data.access_token);
+          if (data.refresh_token) localStorage.setItem('spotify_refresh_token', data.refresh_token);
+          localStorage.setItem('spotify_token_expires_at', state.tokenExpiresAt.toString());
+
+          state.isSpotifyConnected = true;
+          updateConnectionUI(true);
+          startSpotifyPolling();
+        }
+      } catch (err) {
+        console.error("Spotify Auth Callback Exception:", err);
+      }
+    }
+
+    function disconnectSpotify() {
+      state.isSpotifyConnected = false;
+      state.accessToken = null;
+      localStorage.removeItem('spotify_access_token');
+      localStorage.removeItem('spotify_refresh_token');
+      
+      if (state.pollInterval) clearInterval(state.pollInterval);
+      state.track = DEMO_TRACKS[state.demoIndex];
+      updateConnectionUI(false);
+      renderTrackData();
+    }
+
+    async function fetchSpotifyCurrentlyPlaying() {
+      if (!state.accessToken) return;
+
+      try {
+        const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+          headers: { 'Authorization': `Bearer ${state.accessToken}` }
+        });
+
+        if (res.status === 204 || res.status === 404) {
+          state.isPlaying = false;
+          renderTrackData();
+          return;
+        }
+
+        const data = await res.json();
+        if (data && data.item) {
+          state.isPlaying = data.is_playing;
+          state.track = {
+            title: data.item.name,
+            artist: data.item.artists.map(a => a.name).join(', '),
+            album: data.item.album.name,
+            cover: data.item.album.images[0]?.url || DEMO_TRACKS[0].cover,
+            duration_ms: data.item.duration_ms,
+            progress_ms: data.progress_ms
+          };
+          renderTrackData();
+        }
+      } catch (e) {
+        console.warn("Spotify Poll Error:", e);
+      }
+    }
+
+    function startSpotifyPolling() {
+      fetchSpotifyCurrentlyPlaying();
+      if (state.pollInterval) clearInterval(state.pollInterval);
+      state.pollInterval = setInterval(fetchSpotifyCurrentlyPlaying, 3000);
+    }
+
+    function startLocalTicker() {
+      if (state.tickerInterval) clearInterval(state.tickerInterval);
+      
+      let lastTime = Date.now();
+      state.tickerInterval = setInterval(() => {
+        const now = Date.now();
+        const delta = now - lastTime;
+        lastTime = now;
+
+        if (state.isPlaying && state.track) {
+          state.track.progress_ms += delta;
+          if (state.track.progress_ms > state.track.duration_ms) {
+            state.track.progress_ms = state.isSpotifyConnected ? state.track.duration_ms : 0;
+          }
+          updateProgressUI();
+        }
+      }, 100);
+    }
+
+    function formatTime(ms) {
+      if (isNaN(ms) || ms < 0) return "0:00";
+      const totalSeconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    function renderTrackData() {
+      const track = state.track;
+      if (!track) return;
+
+      const img = document.getElementById('album-cover-img');
+      if (img.src !== track.cover) {
+        img.src = track.cover;
+        img.onload = () => extractCoverPalette();
+      }
+
+      document.getElementById('track-title').textContent = track.title;
+      document.getElementById('album-artist').textContent = `${track.artist} — ${track.album}`;
+
+      updateProgressUI();
+    }
+
+    function updateProgressUI() {
+      if (!state.track) return;
+
+      const progress = Math.min(state.track.progress_ms, state.track.duration_ms);
+      const duration = state.track.duration_ms || 1;
+      const percentage = Math.min(Math.max((progress / duration) * 100, 0), 100);
+
+      document.getElementById('progress-fill').style.width = `${percentage}%`;
+      document.getElementById('progress-knob').style.left = `${percentage}%`;
+
+      const elapsed = formatTime(progress);
+      const total = formatTime(duration);
+      document.getElementById('time-display').textContent = `${elapsed} / ${total}`;
+
+      if (!state.isSpotifyConnected) {
+        document.getElementById('demo-scrub-slider').value = percentage;
+        document.getElementById('demo-scrub-time').textContent = elapsed;
+      }
+    }
+
+    function changeDemoTrack(index) {
+      if (state.isSpotifyConnected) return;
+      state.demoIndex = parseInt(index);
+      state.track = { ...DEMO_TRACKS[state.demoIndex] };
+      state.isPlaying = true;
+      document.getElementById('demo-play-icon').className = 'fa-solid fa-pause';
+      renderTrackData();
+    }
+
+    function toggleDemoPlayPause() {
+      if (state.isSpotifyConnected) return;
+      state.isPlaying = !state.isPlaying;
+      document.getElementById('demo-play-icon').className = state.isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+      renderTrackData();
+    }
+
+    function prevDemoTrack() {
+      if (state.isSpotifyConnected) return;
+      state.demoIndex = (state.demoIndex - 1 + DEMO_TRACKS.length) % DEMO_TRACKS.length;
+      document.getElementById('demo-track-select').value = state.demoIndex;
+      changeDemoTrack(state.demoIndex);
+    }
+
+    function nextDemoTrack() {
+      if (state.isSpotifyConnected) return;
+      state.demoIndex = (state.demoIndex + 1) % DEMO_TRACKS.length;
+      document.getElementById('demo-track-select').value = state.demoIndex;
+      changeDemoTrack(state.demoIndex);
+    }
+
+    function scrubDemoTrack(val) {
+      if (state.isSpotifyConnected || !state.track) return;
+      const pct = parseFloat(val) / 100;
+      state.track.progress_ms = state.track.duration_ms * pct;
+      updateProgressUI();
+    }
+
+    function handleProgressBarClick(event) {
+      if (state.isSpotifyConnected) return;
+      const container = document.getElementById('progress-container');
+      const rect = container.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const pct = Math.min(Math.max(clickX / rect.width, 0), 1);
+      state.track.progress_ms = state.track.duration_ms * pct;
+      updateProgressUI();
+    }
+
+    function handleCustomCoverUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          state.track.cover = e.target.result;
+          renderTrackData();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function setStageBackground(type) {
+      const stage = document.getElementById('preview-stage-container');
+      const gameplay = document.getElementById('mock-gameplay-bg');
+      const green = document.getElementById('mock-greenscreen-bg');
+
+      stage.className = "w-full max-w-2xl min-h-[380px] sm:min-h-[440px] rounded-3xl p-6 sm:p-10 flex items-center justify-center transition-all border border-slate-800/80 shadow-2xl relative overflow-hidden bg-slate-950";
+      gameplay.classList.add('opacity-0');
+      green.classList.add('opacity-0');
+
+      if (type === 'checkerboard') {
+        stage.classList.add('checkerboard-bg');
+      } else if (type === 'gameplay') {
+        gameplay.classList.remove('opacity-0');
+      } else if (type === 'greenscreen') {
+        green.classList.remove('opacity-0');
+      }
+    }
+
+    function generateOBSUrl() {
+      const baseUrl = window.location.origin + window.location.pathname;
+      const configPayload = btoa(JSON.stringify({
+        titleFont: state.titleFont,
+        fillColor: state.fillColor,
+        fillEnd: state.fillEnd,
+        titleColor: state.titleColor,
+        artistColor: state.artistColor,
+        bgStyle: state.bgStyle,
+        knobShape: state.knobShape,
+        borderRad: state.borderRad,
+        widgetWidth: state.widgetWidth,
+        textStroke: state.textStroke,
+        layoutMode: state.layoutMode,
+        streamerHandle: state.streamerHandle
+      }));
+
+      document.getElementById('input-obs-url').value = `${baseUrl}?mode=obs&config=${configPayload}`;
+    }
+
+    function generateCustomCSS() {
+      const css = `#widget-card {
+  width: ${state.widgetWidth}px !important;
+  border-radius: ${state.borderRad} !important;
+  font-family: '${state.titleFont}', monospace !important;
+}
+#track-title {
+  color: ${state.titleColor} !important;
+}
+#progress-fill {
+  background: ${state.fillColor} !important;
+}`;
+      document.getElementById('output-custom-css').value = css;
+    }
+
+    function copyOBSUrl() {
+      const input = document.getElementById('input-obs-url');
+      input.select();
+      try {
+        document.execCommand('copy');
+      } catch (e) {
+        navigator.clipboard.writeText(input.value);
+      }
+      const toast = document.getElementById('copy-toast');
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    function copyCustomCSS() {
+      const txt = document.getElementById('output-custom-css');
+      txt.select();
+      document.execCommand('copy');
+    }
+
+    function toggleOBSDockMode() {
+      state.isOBSSource = !state.isOBSSource;
+      if (state.isOBSSource) enableOBSDockMode();
+      else disableOBSDockMode();
+    }
+
+    function enableOBSDockMode() {
+      document.getElementById('studio-header').classList.add('hidden');
+      document.getElementById('stage-toolbar').classList.add('hidden');
+      document.getElementById('demo-controller-bar').classList.add('hidden');
+      document.getElementById('studio-controls-sidebar').classList.add('hidden');
+      document.getElementById('preview-stage-container').className = "flex items-center justify-center p-0 border-none bg-transparent shadow-none";
+      document.body.className = "bg-transparent text-slate-100 flex items-center justify-center min-h-screen p-0 overflow-hidden";
+    }
+
+    function disableOBSDockMode() {
+      document.getElementById('studio-header').classList.remove('hidden');
+      document.getElementById('stage-toolbar').classList.remove('hidden');
+      document.getElementById('demo-controller-bar').classList.remove('hidden');
+      document.getElementById('studio-controls-sidebar').classList.remove('hidden');
+      document.getElementById('preview-stage-container').className = "w-full max-w-2xl min-h-[380px] sm:min-h-[440px] rounded-3xl p-6 sm:p-10 flex items-center justify-center transition-all border border-slate-800/80 shadow-2xl relative overflow-hidden bg-slate-950";
+      document.body.className = "bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-purple-600 selection:text-white overflow-x-hidden";
+    }
+
+    function toggleDynamicTheme(checked) {
+      state.dynamicTheme = checked;
+      if (checked) extractCoverPalette();
+    }
+
+    function resetWidgetToDefaults() {
+      loadPresetByName('synthwave');
+    }
+
+    function switchTab(tabName) {
+      const tabs = ['layout', 'fonts', 'colors', 'album', 'badges', 'obs', 'spotify'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const content = document.getElementById(`tab-content-${t}`);
+        if (t === tabName) {
+          btn.className = "py-3 px-3.5 font-semibold text-purple-400 border-b-2 border-purple-500 whitespace-nowrap transition flex items-center gap-1.5";
+          content.classList.remove('hidden');
+        } else {
+          btn.className = "py-3 px-3.5 font-medium text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap transition flex items-center gap-1.5";
+          content.classList.add('hidden');
+        }
+      });
+    }
+
+    function updateConnectionUI(isConnected) {
+      const badge = document.getElementById('header-status-badge');
+      const btnConnect = document.getElementById('btn-connect-spotify');
+      const btnDisconnect = document.getElementById('btn-disconnect-spotify');
+
+      if (isConnected) {
+        badge.className = "px-3 py-1.5 text-xs font-mono rounded-xl bg-green-500/20 text-green-300 border border-green-500/40 flex items-center gap-1.5";
+        badge.innerHTML = '<i class="fa-solid fa-wifi text-green-400"></i><span>Live Spotify</span>';
+        if (btnConnect) btnConnect.classList.add('hidden');
+        if (btnDisconnect) btnDisconnect.classList.remove('hidden');
+      } else {
+        badge.className = "px-3 py-1.5 text-xs font-mono rounded-xl bg-amber-500/10 text-amber-300 border border-amber-500/30 flex items-center gap-1.5";
+        badge.innerHTML = '<i class="fa-solid fa-flask"></i><span>Demo Mode</span>';
+        if (btnConnect) btnConnect.classList.remove('hidden');
+        if (btnDisconnect) btnDisconnect.classList.add('hidden');
+      }
+    }
+
+    function generateRandomString(length) {
+      const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const values = crypto.getRandomValues(new Uint8Array(length));
+      return values.reduce((acc, x) => acc + possible[x % possible.length], "");
+    }
+
+    async function sha256(plain) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(plain);
+      return window.crypto.subtle.digest('SHA-256', data);
+    }
+
+    function base64encode(input) {
+      return btoa(String.fromCharCode(...new Uint8Array(input)))
+        .replace(/=/g, '')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+    }
+  </script>
+</body>
+</html>
