@@ -35,7 +35,11 @@
       padding: var(--pad); border-radius: var(--widget-radius); background: var(--card-bg);
       backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
       font-family: var(--widget-font); position: relative; overflow: hidden;
-      transition: box-shadow 0.4s ease; transform: scale(var(--widget-scale)); transform-origin: center center;
+      transition: box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: scale(var(--widget-scale)) translateZ(0);
+      transform-origin: center center;
+      will-change: transform;
+      backface-visibility: hidden;
     }
     .np-widget.has-glow {
       box-shadow: 0 12px 40px -8px color-mix(in srgb, var(--accent) calc(var(--glow-strength) * 100%), transparent),
@@ -46,45 +50,69 @@
     .np-widget.gradient-border::before {
       content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px;
       background: linear-gradient(120deg, var(--accent), transparent 40%, var(--accent-end), transparent 70%, var(--accent));
-      background-size: 200% 200%; animation: borderFlow 4s linear infinite;
+      background-size: 300% 300%; animation: borderFlow 8s linear infinite;
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; z-index: 6;
     }
-    @keyframes borderFlow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+    @keyframes borderFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
 
-    .np-widget.float-anim { animation: floatY 4.5s ease-in-out infinite; }
-    .np-widget.breathe-anim { animation: breathe 3.5s ease-in-out infinite; }
-    .np-widget.sway-anim { animation: sway 5s ease-in-out infinite; }
+    .np-widget.float-anim { animation: floatY 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite; }
+    .np-widget.breathe-anim { animation: breathe 5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite; }
+    .np-widget.sway-anim { animation: sway 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite; }
     @keyframes floatY {
-      0%, 100% { transform: scale(var(--widget-scale)) translateY(0); }
-      50% { transform: scale(var(--widget-scale)) translateY(-5px); }
+      0%, 100% { transform: scale(var(--widget-scale)) translate3d(0, 0, 0); }
+      50% { transform: scale(var(--widget-scale)) translate3d(0, -6px, 0); }
     }
     @keyframes breathe {
-      0%, 100% { transform: scale(var(--widget-scale)); }
-      50% { transform: scale(calc(var(--widget-scale) * 1.02)); }
+      0%, 100% { transform: scale(var(--widget-scale)) translateZ(0); }
+      50% { transform: scale(calc(var(--widget-scale) * 1.015)) translateZ(0); }
     }
     @keyframes sway {
-      0%, 100% { transform: scale(var(--widget-scale)) rotate(0deg); }
-      50% { transform: scale(var(--widget-scale)) rotate(0.6deg); }
+      0%, 100% { transform: scale(var(--widget-scale)) rotate(0deg) translateZ(0); }
+      25% { transform: scale(var(--widget-scale)) rotate(0.4deg) translateZ(0); }
+      75% { transform: scale(var(--widget-scale)) rotate(-0.4deg) translateZ(0); }
     }
 
-    .np-widget.track-in .np-meta { animation: slideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
-    .np-widget.track-in .np-cover-wrap { animation: coverPop 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
-    @keyframes slideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
-    @keyframes coverPop { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+    .np-widget.track-in .np-meta { animation: slideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .np-widget.track-in .np-cover-wrap { animation: coverPop 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translate3d(16px, 4px, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    @keyframes coverPop {
+      from { opacity: 0; transform: scale(0.88) translateZ(0); }
+      to { opacity: 1; transform: scale(1) translateZ(0); }
+    }
 
-    .np-cover-wrap { position: relative; flex-shrink: 0; width: var(--cover-size); height: var(--cover-size); }
+    .np-cover-wrap {
+      position: relative; flex-shrink: 0; width: var(--cover-size); height: var(--cover-size);
+      will-change: transform;
+    }
     .np-cover {
       width: 100%; height: 100%; border-radius: var(--cover-radius); object-fit: cover;
       background: #1e293b; box-shadow: 0 6px 20px rgba(0,0,0,0.45); display: block;
+      transform: translateZ(0); backface-visibility: hidden;
     }
-    .np-cover.spin-playing { animation: coverSpin var(--spin-speed) linear infinite; border-radius: 50%; }
-    @keyframes coverSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .np-cover.pulse-playing { animation: coverPulse 1.4s ease-in-out infinite; }
+    .np-cover.spin-playing {
+      animation: coverSpin var(--spin-speed) linear infinite;
+      border-radius: 50%;
+      will-change: transform;
+    }
+    @keyframes coverSpin {
+      from { transform: rotate(0deg) translateZ(0); }
+      to { transform: rotate(360deg) translateZ(0); }
+    }
+    .np-cover.pulse-playing {
+      animation: coverPulse 2.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+    }
     @keyframes coverPulse {
-      0%, 100% { transform: scale(1); filter: brightness(1); }
-      50% { transform: scale(1.04); filter: brightness(1.08); }
+      0%, 100% { transform: scale(1) translateZ(0); filter: brightness(1); }
+      50% { transform: scale(1.03) translateZ(0); filter: brightness(1.06); }
     }
 
     .np-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; position: relative; z-index: 1; }
@@ -102,7 +130,11 @@
       mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
       -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
     }
-    .marquee-inner { display: inline-flex; width: max-content; animation: marquee var(--marquee-speed) linear infinite; }
+    .marquee-inner {
+      display: inline-flex; width: max-content;
+      animation: marquee var(--marquee-speed) linear infinite;
+      will-change: transform;
+    }
     .marquee-inner:hover { animation-play-state: paused; }
     .marquee-inner span { padding-right: 2.5rem; }
     @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
@@ -115,14 +147,18 @@
     .np-bar-track { flex: 1; height: var(--bar-height); border-radius: 99px; background: var(--track-bg); position: relative; overflow: visible; }
     .np-bar-fill {
       height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent-end));
-      width: 0%; transition: width 0.12s linear; position: relative;
+      width: 0%; transition: none; position: relative;
     }
     .np-bar-fill.shimmer::after {
       content: ''; position: absolute; inset: 0; border-radius: inherit;
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-      background-size: 200% 100%; animation: shimmer 2s linear infinite;
+      background-size: 200% 100%; animation: shimmer 2.8s ease-in-out infinite;
     }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { background-position: -200% 0; opacity: 0.5; }
+    }
     .np-bar-fill.glow-bar { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 70%, transparent); }
 
     .np-knob {
@@ -133,10 +169,14 @@
     }
     .np-knob.solid { background: var(--accent); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent); }
     .np-knob.ring { background: transparent; border: 2.5px solid var(--accent); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent); }
-    .np-knob.pulse-knob { background: var(--accent); animation: knobPulse 1.2s ease-in-out infinite; }
+    .np-knob.pulse-knob {
+      background: var(--accent);
+      animation: knobPulse 1.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      will-change: transform;
+    }
     @keyframes knobPulse {
-      0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 6px var(--accent); }
-      50% { transform: translate(-50%, -50%) scale(1.25); box-shadow: 0 0 14px var(--accent); }
+      0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 60%, transparent); }
+      50% { transform: translate(-50%, -50%) scale(1.18); box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 80%, transparent); }
     }
     .np-knob.hidden-knob { display: none; }
 
@@ -147,34 +187,44 @@
 
     .np-eq { display: flex; align-items: flex-end; gap: 2px; height: 14px; margin-top: 6px; }
     .np-eq span { width: 3px; border-radius: 1px; background: var(--accent); opacity: 0.9; transform-origin: bottom; }
-    .np-eq.playing span { animation: eqBounce var(--eq-speed) ease-in-out infinite alternate; }
-    .np-eq.playing span:nth-child(1) { animation-delay: 0s; height: 40%; }
-    .np-eq.playing span:nth-child(2) { animation-delay: 0.08s; height: 70%; }
-    .np-eq.playing span:nth-child(3) { animation-delay: 0.16s; height: 100%; }
-    .np-eq.playing span:nth-child(4) { animation-delay: 0.12s; height: 55%; }
-    .np-eq.playing span:nth-child(5) { animation-delay: 0.04s; height: 80%; }
-    .np-eq.playing span:nth-child(6) { animation-delay: 0.2s; height: 45%; }
-    .np-eq.playing span:nth-child(7) { animation-delay: 0.1s; height: 90%; }
-    .np-eq.playing span:nth-child(8) { animation-delay: 0.14s; height: 60%; }
-    .np-eq.playing span:nth-child(9) { animation-delay: 0.06s; height: 75%; }
-    .np-eq.playing span:nth-child(10) { animation-delay: 0.18s; height: 50%; }
-    .np-eq:not(.playing) span { height: 18%; opacity: 0.3; animation: none; }
-    @keyframes eqBounce { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
+    .np-eq.playing span {
+      animation: eqBounce var(--eq-speed) cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+      will-change: transform;
+    }
+    .np-eq.playing span:nth-child(1) { animation-delay: 0s; height: 42%; }
+    .np-eq.playing span:nth-child(2) { animation-delay: 0.1s; height: 68%; }
+    .np-eq.playing span:nth-child(3) { animation-delay: 0.18s; height: 100%; }
+    .np-eq.playing span:nth-child(4) { animation-delay: 0.14s; height: 55%; }
+    .np-eq.playing span:nth-child(5) { animation-delay: 0.06s; height: 82%; }
+    .np-eq.playing span:nth-child(6) { animation-delay: 0.22s; height: 48%; }
+    .np-eq.playing span:nth-child(7) { animation-delay: 0.12s; height: 90%; }
+    .np-eq.playing span:nth-child(8) { animation-delay: 0.16s; height: 62%; }
+    .np-eq.playing span:nth-child(9) { animation-delay: 0.08s; height: 75%; }
+    .np-eq.playing span:nth-child(10) { animation-delay: 0.2s; height: 52%; }
+    .np-eq:not(.playing) span {
+      height: 18%; opacity: 0.3; animation: none;
+      transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+    }
+    @keyframes eqBounce {
+      0% { transform: scaleY(0.35) translateZ(0); }
+      100% { transform: scaleY(1) translateZ(0); }
+    }
     .np-eq.style-wave span { border-radius: 99px; width: 4px; }
     .np-eq.style-thin span { width: 2px; }
 
     .np-logo { position: absolute; top: 10px; right: 12px; font-size: 14px; opacity: 0.45; color: var(--accent); z-index: 5; }
-    .np-logo.pulse-logo { animation: logoPulse 2s ease-in-out infinite; }
-    @keyframes logoPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.85; } }
+    .np-logo.pulse-logo { animation: logoPulse 2.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite; }
+    @keyframes logoPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.8; } }
 
     .np-ambient {
       position: absolute; width: 140px; height: 140px; border-radius: 50%; top: -50px; left: -50px;
       background: var(--accent); opacity: 0.2; filter: blur(48px); pointer-events: none; z-index: 0;
+      will-change: transform, opacity;
     }
-    .np-ambient.breathe { animation: ambientBreathe 4s ease-in-out infinite; }
+    .np-ambient.breathe { animation: ambientBreathe 5.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite; }
     @keyframes ambientBreathe {
-      0%, 100% { opacity: 0.15; transform: scale(1); }
-      50% { opacity: 0.32; transform: scale(1.15); }
+      0%, 100% { opacity: 0.14; transform: scale(1) translateZ(0); }
+      50% { opacity: 0.3; transform: scale(1.12) translateZ(0); }
     }
 
     .np-widget.layout-pill { border-radius: 999px; padding: 10px 18px 10px 10px; gap: 14px; }
@@ -511,21 +561,51 @@ ambientHtml+logoHtml+
 (c.showTime?'<div class="np-time">'+fmt(t.progress)+'/'+fmt(t.duration)+'</div>':'')+
 '</div>'+eqHtml+'</div></div>';
 }
+function applyProgressDOM(){
+const t=state.track;
+if(!t.duration)return;
+const pct=Math.min(100,Math.max(0,(t.progress/t.duration)*100));
+$$('.np-bar-fill').forEach(function(el){
+  el.style.transition='none';
+  el.style.width=pct+'%';
+});
+$$('.np-knob').forEach(function(el){
+  el.style.transition='none';
+  el.style.left=pct+'%';
+});
+$$('.np-time').forEach(function(el){el.textContent=fmt(t.progress)+'/'+fmt(t.duration)});
+const scrub=$('#sim-scrub');
+if(scrub&&document.activeElement!==scrub)scrub.value=pct;
+}
+function applyPlayingClasses(){
+const playing=!!state.track.playing;
+$$('.np-eq').forEach(function(el){el.classList.toggle('playing',playing)});
+$$('.np-cover').forEach(function(el){
+  el.classList.toggle('spin-playing',playing&&state.cfg.coverAnim==='spin');
+  el.classList.toggle('pulse-playing',playing&&state.cfg.coverAnim==='pulse');
+});
+var ic=$('#sim-icon');
+if(ic)ic.className='fa-solid '+(playing?'fa-pause':'fa-play');
+}
 function render(animateIn){
-applyVars();const html=buildWidget(!!animateIn);
+applyVars();
+const html=buildWidget(!!animateIn);
 const host=$('#widget-host');if(host)host.innerHTML=html;
 const obs=$('#obs-root');if(obs&&document.body.classList.contains('obs-mode'))obs.innerHTML=html;
 updateObsUrlPreview();
 }
-function tickProgress(){
-if(!state.track.playing)return;
-state.track.progress=Math.min(state.track.duration,state.track.progress+100);
-if(!state.token&&state.track.progress>=state.track.duration)state.track.progress=0;
-const pct=(state.track.progress/state.track.duration)*100;
-$$('.np-bar-fill').forEach(function(el){el.style.width=pct+'%'});
-$$('.np-knob').forEach(function(el){el.style.left=pct+'%'});
-$$('.np-time').forEach(function(el){el.textContent=fmt(state.track.progress)+'/'+fmt(state.track.duration)});
-const scrub=$('#sim-scrub');if(scrub&&document.activeElement!==scrub)scrub.value=pct;
+var _lastTick=0;
+function tickProgress(now){
+if(!_lastTick)_lastTick=now||performance.now();
+var t=now||performance.now();
+var dt=Math.min(50,t-_lastTick); // cap delta to avoid jumps after tab sleep
+_lastTick=t;
+if(state.track.playing&&state.track.duration>0){
+  state.track.progress=Math.min(state.track.duration,state.track.progress+dt);
+  if(!state.token&&state.track.progress>=state.track.duration)state.track.progress=0;
+  applyProgressDOM();
+}
+requestAnimationFrame(tickProgress);
 }
 function randStr(n){const a=new Uint8Array(n);crypto.getRandomValues(a);return Array.from(a,function(b){return('0'+b.toString(16)).slice(-2)}).join('').slice(0,n)}
 async function sha256(p){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p));return btoa(String.fromCharCode.apply(null,new Uint8Array(d))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_')}
@@ -571,14 +651,37 @@ try{
 const res=await fetch('https://api.spotify.com/v1/me/player/currently-playing',{headers:{Authorization:'Bearer '+state.token}});
 if(res.status===401){await spRefresh();return}if(res.status===204||res.status===202)return;
 const d=await res.json();if(!d||!d.item)return;
-var newTitle=d.item.name;var changed=newTitle!==state.lastTitle;state.lastTitle=newTitle;
+var newTitle=d.item.name;
+var newArt=(d.item.album&&d.item.album.images&&d.item.album.images[0])?d.item.album.images[0].url:state.track.art;
+var newAlbum=(d.item.album&&d.item.album.name)||(d.item.artists?d.item.artists.map(function(a){return a.name}).join(', '):'');
+var newDur=d.item.duration_ms;
+var apiProgress=d.progress_ms||0;
+var wasPlaying=state.track.playing;
+var nowPlaying=!!d.is_playing;
+var trackChanged=newTitle!==state.lastTitle||newArt!==state.track.art;
+state.lastTitle=newTitle;
 state.track.title=newTitle;
-state.track.album=(d.item.album&&d.item.album.name)||(d.item.artists?d.item.artists.map(function(a){return a.name}).join(', '):'');
-state.track.art=(d.item.album&&d.item.album.images&&d.item.album.images[0])?d.item.album.images[0].url:state.track.art;
-state.track.duration=d.item.duration_ms;state.track.progress=d.progress_ms||0;state.track.playing=d.is_playing;
-render(changed);
+state.track.album=newAlbum;
+state.track.art=newArt;
+state.track.duration=newDur;
+state.track.playing=nowPlaying;
+// Soft-sync progress: only snap if API is meaningfully ahead/behind (avoids jitter)
+var drift=Math.abs(apiProgress-state.track.progress);
+if(trackChanged||drift>1500){
+  state.track.progress=apiProgress;
+}else if(apiProgress>state.track.progress+200){
+  // API slightly ahead — ease toward it without a hard jump
+  state.track.progress=Math.min(apiProgress,state.track.progress+300);
+}
+if(trackChanged){
+  render(true);
+}else if(wasPlaying!==nowPlaying){
+  applyPlayingClasses();
+  applyProgressDOM();
+}else{
+  applyProgressDOM();
+}
 var lab=$('#sim-label');if(lab)lab.textContent=state.track.title;
-var ic=$('#sim-icon');if(ic)ic.className='fa-solid '+(state.track.playing?'fa-pause':'fa-play');
 }catch(e){console.warn(e)}
 }
 function startPoll(){clearInterval(state.poll);spPoll();state.poll=setInterval(spPoll,1000)}
@@ -603,7 +706,7 @@ const raw=p.get('cfg');if(raw){try{Object.assign(state.cfg,JSON.parse(raw))}catc
 var cid=p.get('cid'),at=p.get('at'),rt=p.get('rt');
 if(cid)localStorage.setItem('np_client',cid);if(at){localStorage.setItem('np_access',at);state.token=at}if(rt){localStorage.setItem('np_refresh',rt);state.refresh=rt}
 $('#obs-root').classList.remove('hidden');$('#obs-root').classList.add('flex');render();
-setInterval(tickProgress,100);if(state.token)startPoll();return true;
+requestAnimationFrame(tickProgress);if(state.token)startPoll();return true;
 }
 function init(){
 var savedRedir=localStorage.getItem('np_redirect');var redirInput=$('#sp-redirect');
@@ -656,7 +759,7 @@ $('#btn-sp-login').addEventListener('click',spLogin);
 $('#btn-sp-logout').addEventListener('click',function(){localStorage.removeItem('np_access');localStorage.removeItem('np_refresh');state.token=null;clearInterval(state.poll);setSpStatus(false);toast('Disconnected')});
 $('#btn-copy-uri').addEventListener('click',function(){navigator.clipboard.writeText($('#sp-redirect').value).then(function(){toast('URI copied')})});
 spCallback();if(state.token){setSpStatus(true);startPoll()}
-render();setInterval(tickProgress,100);
+render();requestAnimationFrame(tickProgress);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
