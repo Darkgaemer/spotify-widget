@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;600;700&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@600;700&family=Orbitron:wght@500;700&family=Rajdhani:wght@500;600;700&family=Rubik:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;600;700&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@600;700&family=Orbitron:wght@500;700&family=Rajdhani:wght@500;600;700&family=Rubik:wght@400;600;700&family=Poppins:wght@400;600;700&family=Montserrat:wght@500;600;700;800&family=Bebas+Neue&family=Oswald:wght@500;600;700&family=Righteous&family=Permanent+Marker&family=Press+Start+2P&family=Audiowide&family=Exo+2:wght@500;600;700&family=Sora:wght@500;600;700&family=DM+Sans:wght@500;600;700&family=Archivo:wght@500;600;700&family=Barlow:wght@500;600;700&family=Teko:wght@500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = { darkMode: 'class', theme: { extend: { colors: { spotify: '#1DB954' } } } }
   </script>
@@ -27,17 +27,29 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Inter, system-ui, sans-serif; background: #0a0c10; color: #e2e8f0; min-height: 100vh; }
     body.obs-mode { background: transparent !important; margin: 0 !important; overflow: hidden !important; }
-    body.obs-mode #studio { display: none !important; }
+    body.obs-mode #studio,
+    body.obs-mode #toast,
+    body.obs-mode #obs-dirty {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
     body.obs-mode #obs-root {
       display: flex !important;
       align-items: center;
       justify-content: center;
       background: transparent !important;
       overflow: visible;
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 1;
     }
     body.obs-mode .np-widget {
-      /* kill any residual outline/notch from CEF anti-aliasing */
       outline: none;
+    }
+    body.obs-mode .np-safe {
+      /* only the widget in OBS — no extra chrome */
     }
 
     .np-widget {
@@ -115,21 +127,77 @@
       75% { transform: scale(var(--widget-scale)) rotate(-0.4deg) translateZ(0); }
     }
 
-    .np-widget.track-in .np-meta,
-    .np-widget.track-in-run .np-meta {
-      animation: slideIn 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
-    }
-    .np-widget.track-in .np-cover-wrap,
-    .np-widget.track-in-run .np-cover-wrap {
-      animation: coverPop 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
-    }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translate3d(16px, 4px, 0); }
+    /* Song switch animations — applied via .sw-STYLE on .np-widget */
+    .np-widget.sw-slide .np-meta { animation: swSlideMeta 0.75s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .np-widget.sw-slide .np-cover-wrap { animation: swSlideCover 0.75s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes swSlideMeta {
+      from { opacity: 0; transform: translate3d(18px, 0, 0); }
       to { opacity: 1; transform: translate3d(0, 0, 0); }
     }
-    @keyframes coverPop {
-      from { opacity: 0; transform: scale(0.88) translateZ(0); }
-      to { opacity: 1; transform: scale(1) translateZ(0); }
+    @keyframes swSlideCover {
+      from { opacity: 0; transform: translate3d(-12px, 0, 0) scale(0.92); }
+      to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    }
+
+    .np-widget.sw-fade .np-meta,
+    .np-widget.sw-fade .np-cover-wrap { animation: swFade 0.65s ease both; }
+    @keyframes swFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .np-widget.sw-scale .np-meta { animation: swScaleMeta 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .np-widget.sw-scale .np-cover-wrap { animation: swScaleCover 0.7s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+    @keyframes swScaleMeta {
+      from { opacity: 0; transform: scale(0.94); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes swScaleCover {
+      from { opacity: 0; transform: scale(0.75); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .np-widget.sw-blur .np-meta,
+    .np-widget.sw-blur .np-cover-wrap { animation: swBlur 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes swBlur {
+      from { opacity: 0; filter: blur(10px); transform: scale(1.04); }
+      to { opacity: 1; filter: blur(0); transform: scale(1); }
+    }
+
+    .np-widget.sw-rise .np-meta { animation: swRiseMeta 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .np-widget.sw-rise .np-cover-wrap { animation: swRiseCover 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes swRiseMeta {
+      from { opacity: 0; transform: translate3d(0, 14px, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    @keyframes swRiseCover {
+      from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.9); }
+      to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    }
+
+    .np-widget.sw-flip .np-cover-wrap { animation: swFlipCover 0.75s cubic-bezier(0.16, 1, 0.3, 1) both; perspective: 400px; }
+    .np-widget.sw-flip .np-meta { animation: swFlipMeta 0.75s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes swFlipCover {
+      from { opacity: 0; transform: rotateY(-70deg) scale(0.9); }
+      to { opacity: 1; transform: rotateY(0) scale(1); }
+    }
+    @keyframes swFlipMeta {
+      from { opacity: 0; transform: translate3d(10px, 0, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    .np-widget.sw-glitch .np-title { animation: swGlitchTitle 0.55s steps(2, end) both; }
+    .np-widget.sw-glitch .np-cover-wrap { animation: swGlitchCover 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .np-widget.sw-glitch .np-meta { animation: swFade 0.5s ease 0.1s both; }
+    @keyframes swGlitchTitle {
+      0% { opacity: 0; transform: translate(-4px, 0); filter: hue-rotate(90deg); }
+      30% { opacity: 1; transform: translate(3px, -1px); }
+      60% { transform: translate(-2px, 1px); filter: hue-rotate(0); }
+      100% { opacity: 1; transform: translate(0, 0); }
+    }
+    @keyframes swGlitchCover {
+      from { opacity: 0; transform: scale(1.1) skewX(-4deg); }
+      to { opacity: 1; transform: scale(1) skewX(0); }
     }
 
     .np-cover-wrap {
@@ -479,9 +547,34 @@
             <div>
               <div class="section-label">Font</div>
               <select id="c-font" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400">
-                <option value="Inter">Inter</option><option value="Outfit">Outfit</option><option value="Space Grotesk">Space Grotesk</option>
-                <option value="Syne">Syne</option><option value="Poppins">Poppins</option><option value="Rubik">Rubik</option>
-                <option value="Rajdhani">Rajdhani</option><option value="Orbitron">Orbitron (cyber)</option><option value="JetBrains Mono">JetBrains Mono</option>
+                <optgroup label="Clean">
+                  <option value="Inter">Inter</option>
+                  <option value="Outfit">Outfit</option>
+                  <option value="DM Sans">DM Sans</option>
+                  <option value="Sora">Sora</option>
+                  <option value="Archivo">Archivo</option>
+                  <option value="Barlow">Barlow</option>
+                  <option value="Poppins">Poppins</option>
+                  <option value="Rubik">Rubik</option>
+                  <option value="Montserrat">Montserrat</option>
+                </optgroup>
+                <optgroup label="Display / Tech">
+                  <option value="Space Grotesk">Space Grotesk</option>
+                  <option value="Syne">Syne</option>
+                  <option value="Exo 2">Exo 2</option>
+                  <option value="Orbitron">Orbitron (cyber)</option>
+                  <option value="Audiowide">Audiowide</option>
+                  <option value="Rajdhani">Rajdhani</option>
+                  <option value="Teko">Teko</option>
+                  <option value="Oswald">Oswald</option>
+                </optgroup>
+                <optgroup label="Bold / Fun">
+                  <option value="Bebas Neue">Bebas Neue</option>
+                  <option value="Righteous">Righteous</option>
+                  <option value="Permanent Marker">Permanent Marker</option>
+                  <option value="Press Start 2P">Press Start 2P (pixel)</option>
+                  <option value="JetBrains Mono">JetBrains Mono</option>
+                </optgroup>
               </select>
             </div>
             <div class="grid grid-cols-2 gap-3">
@@ -546,7 +639,19 @@
             </div>
             <div><div class="section-label">Spin speed <span id="v-spin">12s</span></div><input type="range" id="c-spin" min="4" max="30" value="12"></div>
             <div class="grid grid-cols-2 gap-3">
-              <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Track change anim</span><div class="toggle on" data-k="trackAnim"></div></div>
+              <div class="col-span-2">
+                <div class="section-label">Song switch animation</div>
+                <div class="flex flex-wrap gap-2" id="switch-anim-opts">
+                  <button data-v="none" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">None</button>
+                  <button data-v="slide" class="opt-btn active px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Slide</button>
+                  <button data-v="fade" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Fade</button>
+                  <button data-v="scale" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Scale</button>
+                  <button data-v="blur" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Blur</button>
+                  <button data-v="rise" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Rise</button>
+                  <button data-v="flip" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Flip</button>
+                  <button data-v="glitch" class="opt-btn px-3 py-2 rounded-xl text-xs font-semibold bg-white/5">Glitch</button>
+                </div>
+              </div>
               <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Ambient breathe</span><div class="toggle on" data-k="ambientBreathe"></div></div>
               <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2.5"><span class="text-xs text-slate-300">Logo pulse</span><div class="toggle" data-k="logoPulse"></div></div>
             </div>
@@ -634,7 +739,7 @@
 (function(){
 'use strict';
 const state={
-cfg:{accent:'#a855f7',accentEnd:'#c084fc',cardBg:'#0f121c',borderColor:'#ffffff',opacity:82,blur:18,glowStr:45,titleColor:'#ffffff',albumColor:'#e2e8f0',timeColor:'#94a3b8',knobUnfilled:'#ffffff',glow:true,border:true,gradientBorder:false,stroke:false,titleGlow:false,uppercase:false,font:'Inter',titleSz:28,albumSz:15,timeSz:12,ls:-2,marquee:true,marqueeSpeed:12,knob:'split',barH:5,knobSz:14,showTime:true,barShimmer:true,barGlow:true,showEq:true,eqStyle:'bars',eqSpeed:8,motion:'none',coverAnim:'none',spinSpeed:12,trackAnim:true,ambientBreathe:true,logoPulse:false,layout:'classic',cover:92,coverR:18,width:520,radius:20,pad:16,gap:18,scale:100,showLogo:true,ambient:true,hideWhenIdle:true,hideOnPause:false,safeArea:12,metaMode:'both',dynamicTheme:'off'},
+cfg:{accent:'#a855f7',accentEnd:'#c084fc',cardBg:'#0f121c',borderColor:'#ffffff',opacity:82,blur:18,glowStr:45,titleColor:'#ffffff',albumColor:'#e2e8f0',timeColor:'#94a3b8',knobUnfilled:'#ffffff',glow:true,border:true,gradientBorder:false,stroke:false,titleGlow:false,uppercase:false,font:'Inter',titleSz:28,albumSz:15,timeSz:12,ls:-2,marquee:true,marqueeSpeed:12,knob:'split',barH:5,knobSz:14,showTime:true,barShimmer:true,barGlow:true,showEq:true,eqStyle:'bars',eqSpeed:8,motion:'none',coverAnim:'none',spinSpeed:12,trackAnim:true,trackSwitch:'slide',ambientBreathe:true,logoPulse:false,layout:'classic',cover:92,coverR:18,width:520,radius:20,pad:16,gap:18,scale:100,showLogo:true,ambient:true,hideWhenIdle:true,hideOnPause:false,safeArea:12,metaMode:'both',dynamicTheme:'off'},
 track:{title:'Blinding Lights',artist:'The Weeknd',album:'After Hours',art:'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',duration:200040,progress:90000,playing:true,idle:false},
 playlist:[
 {title:'Blinding Lights',artist:'The Weeknd',album:'After Hours',art:'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',duration:200040},
@@ -657,7 +762,7 @@ const PRESETS=[
 function $(s,r){return(r||document).querySelector(s)}
 function $$(s,r){return[...(r||document).querySelectorAll(s)]}
 function fmt(ms){const s=Math.floor(Math.max(0,ms)/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
-function toast(msg){$('#toast-msg').textContent=msg;$('#toast').classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(function(){$('#toast').classList.remove('show')},2000)}
+function toast(msg){if(document.body.classList.contains('obs-mode'))return;var t=$('#toast');if(!t)return;$('#toast-msg').textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove('show')},2000)}
 
 function rgbToHex(r,g,b){return '#'+[r,g,b].map(function(x){x=Math.max(0,Math.min(255,Math.round(x)));return('0'+x.toString(16)).slice(-2)}).join('')}
 function rgbToHsl(r,g,b){
@@ -845,7 +950,7 @@ if(mode==='artist'){
   if(artist)metaHtml+='<div class="np-artist '+strokeCls+'" style="'+upperStyle+'">'+esc(artist)+'</div>';
   if(album)metaHtml+='<div class="np-album '+strokeCls+'" style="'+upperStyle+'">'+esc(album)+'</div>';
 }
-return '<div class="np-safe"><div class="np-widget '+layoutCls+' '+glowCls+' '+borderCls+' '+gradCls+' '+motionCls+' '+pausedCls+' '+idleHide+'" data-animate="'+(animateIn&&c.trackAnim?'1':'0')+'">'+
+return '<div class="np-safe"><div class="np-widget '+layoutCls+' '+glowCls+' '+borderCls+' '+gradCls+' '+motionCls+' '+pausedCls+' '+idleHide+'" data-animate="'+(animateIn&&(c.trackSwitch||'slide')!=='none'?'1':'0')+'">'+
 ambientHtml+logoHtml+
 '<div class="np-cover-wrap"><img class="np-cover '+coverAnimCls+'" src="'+t.art+'" alt="" crossorigin="anonymous" onerror="this.src=\'https://placehold.co/200x200/1e293b/a855f7?text=%E2%99%AA\'"></div>'+
 '<div class="np-meta"><div class="np-title '+strokeCls+' '+glowTextCls+'" style="'+upperStyle+'">'+titleHtml+'</div>'+
@@ -927,20 +1032,24 @@ function loadCfg(){
 function triggerTrackAnim(root){
   if(!root)return;
   var w=root.querySelector('.np-widget');
-  if(!w||!state.cfg.trackAnim)return;
-  w.classList.remove('track-in-run','track-in');
-  // force reflow so animation restarts every song change
-  void w.offsetWidth;
-  w.classList.add('track-in-run');
+  if(!w)return;
+  var style=state.cfg.trackSwitch||(state.cfg.trackAnim?'slide':'none');
+  if(style==='none')return;
+  var classes=['sw-slide','sw-fade','sw-scale','sw-blur','sw-rise','sw-flip','sw-glitch','track-in-run','track-in'];
+  classes.forEach(function(c){w.classList.remove(c)});
+  void w.offsetWidth; // reflow — restart animation
+  w.classList.add('sw-'+style);
   clearTimeout(triggerTrackAnim._t);
-  triggerTrackAnim._t=setTimeout(function(){w.classList.remove('track-in-run')},800);
+  triggerTrackAnim._t=setTimeout(function(){
+    classes.forEach(function(c){w.classList.remove(c)});
+  },850);
 }
 function render(animateIn){
 applyVars();
 const html=buildWidget(!!animateIn);
 const host=$('#widget-host');if(host)host.innerHTML=html;
 const obs=$('#obs-root');if(obs&&document.body.classList.contains('obs-mode'))obs.innerHTML=html;
-if(animateIn&&state.cfg.trackAnim){
+if(animateIn&&(state.cfg.trackSwitch||'slide')!=='none'){
   requestAnimationFrame(function(){
     triggerTrackAnim(host);
     triggerTrackAnim(obs);
@@ -1090,6 +1199,9 @@ function updateObsUrlPreview(){var el=$('#obs-url-preview');if(el)el.value=getOb
 function loadObs(){
 const p=new URLSearchParams(location.search);if(p.get('obs')!=='1')return false;
 document.body.classList.add('obs-mode');
+var _toast=$('#toast');if(_toast)_toast.classList.remove('show');
+var _dirty=$('#obs-dirty');if(_dirty)_dirty.classList.remove('show');
+
 const raw=p.get('cfg');if(raw){try{Object.assign(state.cfg,JSON.parse(raw))}catch(e){try{Object.assign(state.cfg,JSON.parse(decodeURIComponent(raw)))}catch(e2){}}}
 var cid=p.get('cid'),at=p.get('at'),rt=p.get('rt');
 if(cid)localStorage.setItem('np_client',cid);if(at){localStorage.setItem('np_access',at);state.token=at}if(rt){localStorage.setItem('np_refresh',rt);state.refresh=rt}
@@ -1114,7 +1226,7 @@ function wireOpts(sel,key){
 $$(sel+' .opt-btn').forEach(function(btn){
 if(state.cfg[key]===btn.dataset.v){$$(sel+' .opt-btn').forEach(function(b){b.classList.remove('active')});btn.classList.add('active')}
 btn.addEventListener('click',function(){state.cfg[key]=btn.dataset.v;$$(sel+' .opt-btn').forEach(function(b){b.classList.toggle('active',b===btn)});saveCfg();markObsDirty();render()})})}
-wireOpts('#knob-opts','knob');wireOpts('#layout-opts','layout');wireOpts('#eq-opts','eqStyle');wireOpts('#motion-opts','motion');wireOpts('#cover-anim-opts','coverAnim');wireOpts('#meta-opts','metaMode');wireOpts('#dyn-theme-opts','dynamicTheme');
+wireOpts('#knob-opts','knob');wireOpts('#layout-opts','layout');wireOpts('#eq-opts','eqStyle');wireOpts('#motion-opts','motion');wireOpts('#cover-anim-opts','coverAnim');wireOpts('#meta-opts','metaMode');wireOpts('#dyn-theme-opts','dynamicTheme');wireOpts('#switch-anim-opts','trackSwitch');
 function bind(id,key,label,suffix){var el=$(id);if(!el)return;el.addEventListener('input',function(){state.cfg[key]=el.type==='range'?+el.value:el.value;if(label)$(label).textContent=state.cfg[key]+(suffix||'');saveCfg();markObsDirty();render()})}
 bind('#c-accent','accent');bind('#c-accentEnd','accentEnd');bind('#c-cardBg','cardBg');bind('#c-borderColor','borderColor');
 bind('#c-title','titleColor');bind('#c-album','albumColor');bind('#c-time','timeColor');bind('#c-knobUnfilled','knobUnfilled');
