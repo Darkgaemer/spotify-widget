@@ -37,6 +37,7 @@
       --widget-width: 520px;
       --gap: 18px;
       --pad: 16px;
+      --widget-scale: 1;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -71,7 +72,9 @@
       font-family: var(--widget-font);
       position: relative;
       overflow: hidden;
-      transition: box-shadow 0.35s ease, transform 0.35s ease;
+      transition: box-shadow 0.35s ease;
+      transform: scale(var(--widget-scale));
+      transform-origin: center center;
     }
     .np-widget.has-glow {
       box-shadow: 0 8px 32px -6px color-mix(in srgb, var(--accent) 45%, transparent);
@@ -83,8 +86,8 @@
       animation: floatY 4.5s ease-in-out infinite;
     }
     @keyframes floatY {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
+      0%, 100% { transform: scale(var(--widget-scale)) translateY(0); }
+      50% { transform: scale(var(--widget-scale)) translateY(-4px); }
     }
 
     .np-cover {
@@ -590,12 +593,33 @@
               </div>
               <div>
                 <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Widget width <span id="v-width">520px</span></div>
-                <input type="range" id="c-width" min="320" max="700" value="520">
+                <input type="range" id="c-width" min="280" max="900" value="520">
               </div>
               <div>
                 <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Corner radius <span id="v-radius">20px</span></div>
-                <input type="range" id="c-radius" min="0" max="32" value="20">
+                <input type="range" id="c-radius" min="0" max="40" value="20">
               </div>
+              <div>
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Padding <span id="v-pad">16px</span></div>
+                <input type="range" id="c-pad" min="6" max="36" value="16">
+              </div>
+              <div>
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Gap (cover↔text) <span id="v-gap">18px</span></div>
+                <input type="range" id="c-gap" min="8" max="36" value="18">
+              </div>
+              <div>
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Overall scale <span id="v-scale">100%</span></div>
+                <input type="range" id="c-scale" min="50" max="150" value="100">
+              </div>
+              <div>
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Time size <span id="v-timeSz">12px</span></div>
+                <input type="range" id="c-timeSz" min="9" max="18" value="12">
+              </div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-3 space-y-2">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">OBS Browser Source URL</div>
+              <p class="text-[10px] text-slate-400 leading-relaxed">After connecting Spotify, click <strong>Copy OBS URL</strong> again. The link embeds your session so OBS can poll live tracks (OBS has its own browser — it cannot see your studio login).</p>
+              <textarea id="obs-url-preview" readonly rows="3" class="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-mono text-slate-400 outline-none resize-none"></textarea>
             </div>
           </div>
 
@@ -603,9 +627,9 @@
             <div class="bg-purple-500/10 border border-purple-500/25 rounded-xl p-3 text-xs leading-relaxed text-slate-300 space-y-2">
               <p><strong class="text-purple-300">Important:</strong> Spotify does <em>not</em> allow <code class="text-purple-200">file://</code> redirects. Your app is registered to:</p>
               <p class="font-mono text-[11px] text-purple-200 break-all">https://darkgaemer.github.io/spotify-widget/</p>
-              <p>1. Upload this HTML to that GitHub Pages URL (or keep the redirect URI below matching your Spotify app exactly).<br>
-              2. Open the <strong>hosted</strong> page in a browser → paste Client ID → Connect.<br>
-              3. After login, tokens are saved in the browser. For OBS, use the same hosted URL with <code class="text-purple-200">?obs=1</code>.</p>
+              <p>1. Upload this HTML to that GitHub Pages URL (Redirect URI must match exactly).<br>
+              2. Open the <strong>hosted</strong> page → Client ID → Connect Spotify.<br>
+              3. <strong>After connecting</strong>, click <strong>Copy OBS URL</strong> again — the link now includes your Spotify session so OBS can show live tracks (OBS is a separate browser and cannot see your studio login).</p>
             </div>
             <div>
               <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Client ID</div>
@@ -669,6 +693,10 @@
       coverR: 18,
       width: 520,
       radius: 20,
+      pad: 16,
+      gap: 18,
+      scale: 100,
+      timeSz: 12,
       showEq: true,
       showLogo: true,
       ambient: true
@@ -739,6 +767,10 @@
     r.style.setProperty('--knob-size', c.knobSz + 'px');
     r.style.setProperty('--widget-font', "'" + c.font + "', system-ui, sans-serif");
     r.style.setProperty('--widget-width', c.width + 'px');
+    r.style.setProperty('--pad', (c.pad || 16) + 'px');
+    r.style.setProperty('--gap', (c.gap || 18) + 'px');
+    r.style.setProperty('--widget-scale', ((c.scale || 100) / 100).toFixed(3));
+    r.style.setProperty('--time-size', (c.timeSz || 12) + 'px');
   }
 
   function esc(s) {
@@ -796,11 +828,16 @@
     if (obs && document.body.classList.contains('obs-mode')) {
       obs.innerHTML = html;
     }
+    updateObsUrlPreview();
   }
 
   function tickProgress() {
-    if (!state.track.playing || state.token) return;
-    state.track.progress = (state.track.progress + 100) % state.track.duration;
+    if (!state.track.playing) return;
+    // Always advance smoothly; Spotify poll corrects position every 1s
+    state.track.progress = Math.min(state.track.duration, state.track.progress + 100);
+    if (!state.token && state.track.progress >= state.track.duration) {
+      state.track.progress = 0;
+    }
     const pct = (state.track.progress / state.track.duration) * 100;
     $$('.np-bar-fill').forEach(function(el) { el.style.width = pct + '%'; });
     $$('.np-knob').forEach(function(el) { el.style.left = pct + '%'; });
@@ -932,18 +969,42 @@
   function startPoll() {
     clearInterval(state.poll);
     spPoll();
-    state.poll = setInterval(spPoll, 3000);
+    // 1 second poll for responsive track changes; progress advances smoothly between polls
+    state.poll = setInterval(spPoll, 1000);
   }
 
   function setSpStatus(ok) {
     $('#sp-status').innerHTML = ok
-      ? '<span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span> Connected — live polling'
+      ? '<span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span> Connected — polling every 1s'
       : '<span class="w-2 h-2 rounded-full bg-slate-600"></span> Not connected';
+    updateObsUrlPreview();
   }
 
   function getObsUrl() {
-    const base = location.href.split('?')[0].split('#')[0];
-    return base + '?obs=1&cfg=' + encodeURIComponent(JSON.stringify(state.cfg));
+    // Always use the hosted base (redirect URI origin) so OBS loads https, not file://
+    var redir = getRedirectUri();
+    var base = redir.replace(/\/?$/, '/');
+    // If currently on https host matching redirect, use exact current page path without query
+    if ((location.protocol === 'https:' || location.protocol === 'http:') && location.href.indexOf(location.origin) === 0) {
+      base = location.origin + location.pathname.split('?')[0];
+      if (!/\.html?$/i.test(base) && !/\/$/.test(base)) base += '/';
+    }
+    var params = new URLSearchParams();
+    params.set('obs', '1');
+    params.set('cfg', JSON.stringify(state.cfg));
+    // Embed Spotify session so OBS (separate browser profile) can poll live
+    var clientId = localStorage.getItem('np_client') || ($('#sp-client') && $('#sp-client').value) || '';
+    var access = state.token || localStorage.getItem('np_access') || '';
+    var refresh = state.refresh || localStorage.getItem('np_refresh') || '';
+    if (clientId) params.set('cid', clientId);
+    if (access) params.set('at', access);
+    if (refresh) params.set('rt', refresh);
+    return base + (base.indexOf('?') >= 0 ? '&' : '?') + params.toString();
+  }
+
+  function updateObsUrlPreview() {
+    var el = $('#obs-url-preview');
+    if (el) el.value = getObsUrl();
   }
 
   function loadObs() {
@@ -952,12 +1013,42 @@
     document.body.classList.add('obs-mode');
     const raw = p.get('cfg');
     if (raw) {
-      try { Object.assign(state.cfg, JSON.parse(decodeURIComponent(raw))); } catch (e) {}
+      try { Object.assign(state.cfg, JSON.parse(raw)); } catch (e) {
+        try { Object.assign(state.cfg, JSON.parse(decodeURIComponent(raw))); } catch (e2) {}
+      }
     }
+    // Restore Spotify session from OBS URL (OBS has no access to studio localStorage)
+    var cid = p.get('cid');
+    var at = p.get('at');
+    var rt = p.get('rt');
+    if (cid) localStorage.setItem('np_client', cid);
+    if (at) {
+      localStorage.setItem('np_access', at);
+      state.token = at;
+    }
+    if (rt) {
+      localStorage.setItem('np_refresh', rt);
+      state.refresh = rt;
+    }
+
     $('#obs-root').classList.remove('hidden');
     $('#obs-root').classList.add('flex');
     render();
-    setInterval(tickProgress, 100);
+
+    // Smooth local progress every 100ms when playing
+    setInterval(function() {
+      if (state.track.playing) {
+        state.track.progress = Math.min(state.track.duration, state.track.progress + 100);
+        var pct = (state.track.progress / state.track.duration) * 100;
+        $$('.np-bar-fill').forEach(function(el) { el.style.width = pct + '%'; });
+        $$('.np-knob').forEach(function(el) { el.style.left = pct + '%'; });
+        $$('.np-time').forEach(function(el) { el.textContent = fmt(state.track.progress) + '/' + fmt(state.track.duration); });
+      }
+    }, 100);
+
+    if (state.token) {
+      startPoll();
+    }
     return true;
   }
 
@@ -1040,6 +1131,10 @@
     bind('#c-coverR', 'coverR', '#v-coverR', 'px');
     bind('#c-width', 'width', '#v-width', 'px');
     bind('#c-radius', 'radius', '#v-radius', 'px');
+    bind('#c-pad', 'pad', '#v-pad', 'px');
+    bind('#c-gap', 'gap', '#v-gap', 'px');
+    bind('#c-scale', 'scale', '#v-scale', '%');
+    bind('#c-timeSz', 'timeSz', '#v-timeSz', 'px');
 
     var pg = $('#presets');
     pg.innerHTML = PRESETS.map(function(p, i) {
